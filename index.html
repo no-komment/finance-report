@@ -1,0 +1,325 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#f4f3ef">
+  <title>Расходы</title>
+  <link rel="stylesheet" href="./css/styles.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" defer></script>
+  <script type="module" src="./js/app.js"></script>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="Навигация">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M5 16.5V7.7c0-.9.7-1.7 1.7-1.7h10.6c.9 0 1.7.7 1.7 1.7v8.6c0 .9-.7 1.7-1.7 1.7H6.7c-.9 0-1.7-.7-1.7-1.5Z"/><path d="M8 10h8M8 14h5"/></svg>
+        </span>
+        <div><strong>Расходы</strong><span id="save-status" class="save-status" aria-live="polite">Загрузка…</span></div>
+      </div>
+
+      <nav class="nav-stack" aria-label="Разделы">
+        <button class="nav-item is-active" type="button">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M4 5.5h16M4 12h16M4 18.5h10"/></svg>
+          <span>Расходы</span>
+        </button>
+        <button class="nav-item" type="button" data-action="references">
+          <svg viewBox="0 0 24 24" fill="none"><circle cx="7" cy="7" r="2.5"/><circle cx="17" cy="7" r="2.5"/><circle cx="7" cy="17" r="2.5"/><circle cx="17" cy="17" r="2.5"/></svg>
+          <span>Категории</span>
+        </button>
+        <button class="nav-item" type="button" data-action="open-data-sheet">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 20h14"/></svg>
+          <span>Импорт / экспорт</span>
+        </button>
+        <button class="nav-item" type="button" data-action="github">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M12 3a9 9 0 0 0-2.8 17.6c.5.1.7-.2.7-.5v-1.8c-2.8.6-3.4-1.2-3.4-1.2-.5-1.2-1.1-1.5-1.1-1.5-.9-.6.1-.6.1-.6 1 0 1.5 1 1.5 1 .9 1.5 2.3 1.1 2.9.8.1-.6.3-1.1.6-1.3-2.2-.3-4.6-1.1-4.6-5A3.9 3.9 0 0 1 7 7.7c-.1-.3-.5-1.3.1-2.8 0 0 .8-.3 2.9 1.1a9.8 9.8 0 0 1 5.2 0c2-1.4 2.9-1.1 2.9-1.1.6 1.5.2 2.5.1 2.8a3.9 3.9 0 0 1 1 2.7c0 3.9-2.4 4.7-4.6 5 .4.3.7.9.7 1.8v2.9c0 .3.2.6.7.5A9 9 0 0 0 12 3Z"/></svg>
+          <span>Настройки</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-divider"></div>
+      <div class="sidebar-section-head">
+        <span>Месяцы</span>
+        <button id="new-month-btn" class="mini-icon-button" type="button" aria-label="Создать месяц" title="Создать месяц">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14"/></svg>
+        </button>
+      </div>
+      <div id="sidebar-months" class="month-list" aria-label="Месяцы"></div>
+
+      <div class="sidebar-spacer"></div>
+      <div class="sidebar-footer">
+        <button id="theme-btn" class="theme-control" type="button" aria-label="Переключить тему">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M12 3a9 9 0 1 0 9 9c0-.6-.1-1.2-.2-1.8A7 7 0 0 1 12 3Z"/></svg>
+          <span>Тема</span>
+          <span class="theme-value">Авто</span>
+        </button>
+      </div>
+    </aside>
+
+    <div class="main-column">
+      <header class="content-header">
+        <div class="header-copy">
+          <div class="mobile-month-picker">
+            <label for="month-select">Месяц</label>
+            <select id="month-select" aria-label="Выбрать месяц"></select>
+          </div>
+          <p class="eyebrow">Текущий период</p>
+          <h1 id="month-title">Расходы</h1>
+          <p id="month-subtitle" class="header-subtitle">Загрузка данных…</p>
+        </div>
+        <div class="header-actions">
+          <button id="add-expense-btn" class="button primary" type="button">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14"/></svg>
+            <span>Добавить расход</span>
+          </button>
+          <details class="context-menu" id="month-more-menu">
+            <summary class="icon-button" aria-label="Действия с месяцем" title="Действия с месяцем">
+              <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="19" cy="12" r="1.7"/></svg>
+            </summary>
+            <div class="menu-panel">
+              <button type="button" data-action="create-month">
+                <svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14"/></svg>
+                Новый месяц
+              </button>
+              <button id="edit-month-btn" type="button">
+                <svg viewBox="0 0 24 24" fill="none"><path d="m4 16-.5 4.5L8 20l10.5-10.5-4-4L4 16Z"/><path d="m12.8 7.2 4 4"/></svg>
+                Изменить месяц
+              </button>
+              <button type="button" data-action="export-xlsx">
+                <svg viewBox="0 0 24 24" fill="none"><path d="M12 4v11m0 0 4-4m-4 4-4-4M5 20h14"/></svg>
+                Экспорт XLSX
+              </button>
+              <button type="button" data-action="export-json">
+                <svg viewBox="0 0 24 24" fill="none"><path d="M7 3h7l4 4v14H7V3Z"/><path d="M14 3v5h5"/></svg>
+                Резервная копия JSON
+              </button>
+              <div class="menu-separator"></div>
+              <button id="delete-month-btn" type="button" class="danger-text">
+                <svg viewBox="0 0 24 24" fill="none"><path d="M5 7h14M9 7V4h6v3m-8 0 1 13h8l1-13M10 11v5m4-5v5"/></svg>
+                Удалить месяц
+              </button>
+            </div>
+          </details>
+        </div>
+      </header>
+
+      <main class="workspace">
+        <section id="empty-app" class="empty-state app-empty" hidden>
+          <div class="empty-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M6 4h12v16H6zM9 9h6M9 13h4"/></svg></div>
+          <h2>Создайте первый месяц</h2>
+          <p>Начните с пустого периода или импортируйте существующий отчет, когда это понадобится.</p>
+          <div class="empty-actions">
+            <button class="button primary" type="button" data-action="create-first-month">Создать месяц</button>
+            <button class="button quiet" type="button" data-action="import-xlsx">Импортировать XLSX</button>
+          </div>
+        </section>
+
+        <div id="month-content">
+          <section class="financial-overview" aria-label="Финансовая сводка">
+            <div class="balance-block">
+              <span class="summary-label">Остаток</span>
+              <strong id="stat-balance" class="balance-value">0 ₽</strong>
+              <div class="balance-context">
+                <span>из <strong id="stat-income">0 ₽</strong> дохода</span>
+                <span class="context-dot" aria-hidden="true"></span>
+                <span id="previous-comparison">Нет данных для сравнения</span>
+              </div>
+              <div class="spend-progress" aria-label="Доля потраченного дохода">
+                <span id="spent-progress"></span>
+              </div>
+              <div class="progress-caption">
+                <span id="spent-progress-label">Потрачено 0%</span>
+                <span id="income-note"></span>
+              </div>
+            </div>
+            <div class="overview-metrics">
+              <div class="metric-item expense-metric">
+                <span>Расходы</span>
+                <strong id="stat-expenses">0 ₽</strong>
+                <small>за выбранный месяц</small>
+              </div>
+              <div class="metric-rule"></div>
+              <div class="metric-item">
+                <span>Операции</span>
+                <strong id="stat-count">0</strong>
+                <small>строк расходов</small>
+              </div>
+            </div>
+          </section>
+
+          <section class="insights" aria-label="Структура расходов">
+            <article class="insight-section types-section">
+              <div class="section-title-row"><div><p class="section-kicker">Структура</p><h2>По типам</h2></div></div>
+              <div id="by-type" class="breakdown-list"></div>
+            </article>
+            <article class="insight-section categories-section">
+              <div class="section-title-row"><div><p class="section-kicker">Основные траты</p><h2>По категориям</h2></div></div>
+              <div id="by-category" class="breakdown-list"></div>
+            </article>
+          </section>
+
+          <section class="expenses-section">
+            <div class="section-head">
+              <div>
+                <p class="section-kicker">История</p>
+                <div class="expenses-title-line"><h2>Расходы</h2><span id="filtered-total" class="section-meta"></span></div>
+              </div>
+            </div>
+
+            <div class="filters" aria-label="Фильтры">
+              <label class="search-field">
+                <span class="visually-hidden">Поиск</span>
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg>
+                <input id="search-input" type="search" placeholder="Поиск расходов…">
+              </label>
+              <label class="compact-select"><span class="visually-hidden">Категория</span><select id="category-filter"><option value="">Все категории</option></select></label>
+              <label class="compact-select"><span class="visually-hidden">Тип</span><select id="type-filter"><option value="">Все типы</option></select></label>
+              <label class="compact-select sort-select"><span class="visually-hidden">Сортировка</span><select id="sort-select">
+                <option value="day-asc">Сначала ранние</option><option value="day-desc">Сначала поздние</option>
+                <option value="amount-desc">Сначала крупные</option><option value="amount-asc">Сначала мелкие</option>
+              </select></label>
+              <button id="reset-filters-btn" class="filter-reset" type="button">Сбросить</button>
+            </div>
+            <div id="active-filters" class="active-filters" hidden></div>
+
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th class="day-col">День</th><th>Категория</th><th>Описание</th><th class="money">Сумма</th><th>Тип</th><th class="actions-col"><span class="visually-hidden">Действия</span></th></tr></thead>
+                <tbody id="expenses-body"></tbody>
+              </table>
+            </div>
+            <div id="expenses-empty" class="empty-state expenses-empty" hidden></div>
+          </section>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <nav class="mobile-nav" aria-label="Мобильная навигация">
+    <button class="mobile-nav-item is-active" type="button">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M4 5.5h16M4 12h16M4 18.5h10"/></svg><span>Расходы</span>
+    </button>
+    <button class="mobile-nav-item" type="button" data-action="references">
+      <svg viewBox="0 0 24 24" fill="none"><circle cx="7" cy="7" r="2.5"/><circle cx="17" cy="7" r="2.5"/><circle cx="7" cy="17" r="2.5"/><circle cx="17" cy="17" r="2.5"/></svg><span>Категории</span>
+    </button>
+    <button class="mobile-nav-item" type="button" data-action="open-data-sheet">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 20h14"/></svg><span>Данные</span>
+    </button>
+  </nav>
+  <button class="mobile-add-button" type="button" data-action="add-expense" aria-label="Добавить расход">
+    <svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14"/></svg>
+  </button>
+
+  <input id="xlsx-input" type="file" accept=".xlsx,.xls" hidden>
+  <input id="json-input" type="file" accept="application/json,.json" hidden>
+
+  <dialog id="expense-dialog" class="side-dialog">
+    <form id="expense-form" method="dialog" class="dialog-form">
+      <div class="dialog-head">
+        <div><p class="dialog-kicker">Операция</p><h2 id="expense-dialog-title">Добавить расход</h2></div>
+        <button type="button" class="close-button" data-close="expense-dialog" aria-label="Закрыть"><svg viewBox="0 0 24 24" fill="none"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
+      </div>
+      <input id="expense-id" type="hidden">
+      <div class="form-grid expense-form-grid">
+        <label><span>День</span><input id="expense-day" name="day" type="number" min="1" required inputmode="numeric"></label>
+        <label><span>Сумма</span><div class="money-input"><input id="expense-amount" name="amount" type="number" min="0.01" step="0.01" required inputmode="decimal"><span>₽</span></div></label>
+        <label class="full"><span>Описание</span><input id="expense-description" name="description" autocomplete="off" placeholder="Например, продукты на неделю"></label>
+        <label><span>Категория</span><input id="expense-category" name="category" list="category-list" required autocomplete="off"></label>
+        <label><span>Тип</span><select id="expense-type" name="type" required></select></label>
+      </div>
+      <datalist id="category-list"></datalist>
+      <div class="dialog-actions"><button type="button" class="button quiet" data-close="expense-dialog">Отмена</button><button class="button primary" value="save">Сохранить расход</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="month-dialog">
+    <form id="month-form" method="dialog" class="dialog-form">
+      <div class="dialog-head"><div><p class="dialog-kicker">Период</p><h2 id="month-dialog-title">Новый месяц</h2></div><button type="button" class="close-button" data-close="month-dialog" aria-label="Закрыть"><svg viewBox="0 0 24 24" fill="none"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
+      <input id="month-mode" type="hidden" value="create">
+      <div class="form-grid">
+        <label id="month-number-wrap"><span>Месяц</span><select id="month-number"></select></label>
+        <label id="month-year-wrap"><span>Год</span><input id="month-year" type="number" min="1900" max="2200" required></label>
+        <label class="full"><span>Доход</span><div class="money-input"><input id="month-income" type="number" min="0" step="0.01" inputmode="decimal"><span>₽</span></div></label>
+        <label class="full"><span>Заметка к доходу</span><textarea id="month-note" rows="3" placeholder="Необязательная заметка"></textarea></label>
+      </div>
+      <div class="dialog-actions"><button type="button" class="button quiet" data-close="month-dialog">Отмена</button><button class="button primary" value="save">Сохранить</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="import-dialog">
+    <div class="dialog-form wide">
+      <div class="dialog-head"><div><p class="dialog-kicker">Проверка данных</p><h2 id="import-title">Импорт</h2></div><button type="button" class="close-button" data-close="import-dialog" aria-label="Закрыть"><svg viewBox="0 0 24 24" fill="none"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
+      <div id="import-preview" class="import-preview"></div>
+      <div class="dialog-actions">
+        <button class="button quiet" data-close="import-dialog">Отмена</button>
+        <button id="import-merge-btn" class="button secondary">Объединить</button>
+        <button id="import-replace-btn" class="button danger">Заменить все</button>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog id="references-dialog">
+    <div class="dialog-form wide">
+      <div class="dialog-head"><div><p class="dialog-kicker">Справочники</p><h2>Категории и типы</h2></div><button type="button" class="close-button" data-close="references-dialog" aria-label="Закрыть"><svg viewBox="0 0 24 24" fill="none"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
+      <div class="refs-grid">
+        <section><div class="refs-head"><div><h3>Категории</h3><p>Используются при добавлении расхода</p></div><button class="button compact" data-ref-add="categories">Добавить</button></div><div id="categories-list" class="ref-list"></div></section>
+        <section><div class="refs-head"><div><h3>Типы</h3><p>Личный, семейный и другие</p></div><button class="button compact" data-ref-add="types">Добавить</button></div><div id="types-list" class="ref-list"></div></section>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog id="reference-dialog">
+    <form id="reference-form" method="dialog" class="dialog-form">
+      <div class="dialog-head"><div><p class="dialog-kicker">Справочник</p><h2 id="reference-dialog-title">Новая категория</h2></div><button type="button" class="close-button" data-close="reference-dialog" aria-label="Закрыть"><svg viewBox="0 0 24 24" fill="none"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
+      <input id="reference-kind" type="hidden">
+      <input id="reference-old-value" type="hidden">
+      <div class="form-grid"><label class="full"><span>Название</span><input id="reference-value" required autocomplete="off"></label></div>
+      <div class="dialog-actions"><button type="button" class="button quiet" data-close="reference-dialog">Отмена</button><button class="button primary" value="save">Сохранить</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="github-dialog">
+    <div class="dialog-form wide">
+      <div class="dialog-head"><div><p class="dialog-kicker">Опционально</p><h2>GitHub Sync</h2></div><button type="button" class="close-button" data-close="github-dialog" aria-label="Закрыть"><svg viewBox="0 0 24 24" fill="none"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
+      <p class="notice">PAT не записывается в исходники или localStorage. В этой вкладке он хранится только в sessionStorage до закрытия браузерной сессии.</p>
+      <div class="form-grid">
+        <label><span>Owner</span><input id="gh-owner"></label>
+        <label><span>Repository</span><input id="gh-repo"></label>
+        <label><span>Branch</span><input id="gh-branch" value="main"></label>
+        <label><span>JSON path</span><input id="gh-path" value="data/expenses.json"></label>
+        <label class="full"><span>Fine-grained PAT</span><input id="gh-token" type="password" autocomplete="off"></label>
+      </div>
+      <div id="gh-status" class="status-line muted"></div>
+      <div id="gh-conflict" class="conflict" hidden>
+        <strong>Удаленный файл изменился.</strong>
+        <button id="gh-use-remote" class="button secondary">Загрузить свежую версию</button>
+        <button id="gh-merge" class="button secondary">Объединить изменения</button>
+        <button id="gh-cancel-conflict" class="button quiet">Отмена</button>
+      </div>
+      <div class="dialog-actions"><button id="gh-load" class="button secondary">Загрузить из GitHub</button><button id="gh-push" class="button primary">Сохранить в GitHub</button></div>
+    </div>
+  </dialog>
+
+  <dialog id="data-dialog" class="mobile-sheet">
+    <div class="dialog-form data-dialog-form">
+      <div class="dialog-head"><div><p class="dialog-kicker">Данные</p><h2>Импорт и настройки</h2></div><button type="button" class="close-button" data-close="data-dialog" aria-label="Закрыть"><svg viewBox="0 0 24 24" fill="none"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
+      <div class="data-actions-grid">
+        <button type="button" data-action="import-xlsx"><svg viewBox="0 0 24 24" fill="none"><path d="M12 20V9m0 0-4 4m4-4 4 4M5 4h14"/></svg><span><strong>Импорт XLSX</strong><small>Загрузить Excel-отчет</small></span></button>
+        <button type="button" data-action="export-xlsx"><svg viewBox="0 0 24 24" fill="none"><path d="M12 4v11m0 0 4-4m-4 4-4-4M5 20h14"/></svg><span><strong>Экспорт XLSX</strong><small>Скачать все месяцы</small></span></button>
+        <button type="button" data-action="import-json"><svg viewBox="0 0 24 24" fill="none"><path d="M7 3h7l4 4v14H7V3Z"/><path d="M14 3v5h5"/></svg><span><strong>Импорт JSON</strong><small>Восстановить резервную копию</small></span></button>
+        <button type="button" data-action="export-json"><svg viewBox="0 0 24 24" fill="none"><path d="M7 3h7l4 4v14H7V3Z"/><path d="M14 3v5h5M10 13h5M10 17h5"/></svg><span><strong>Экспорт JSON</strong><small>Сделать резервную копию</small></span></button>
+        <button type="button" data-action="github"><svg viewBox="0 0 24 24" fill="none"><path d="M8 17H6a4 4 0 0 1 0-8c.3-3 2.4-5 5.2-5A5.8 5.8 0 0 1 17 9h1a4 4 0 0 1 0 8h-2M12 11v9m0-9-3 3m3-3 3 3"/></svg><span><strong>GitHub Sync</strong><small>Синхронизировать JSON</small></span></button>
+        <button type="button" data-action="cycle-theme"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3a9 9 0 1 0 9 9c0-.6-.1-1.2-.2-1.8A7 7 0 0 1 12 3Z"/></svg><span><strong>Переключить тему</strong><small>Светлая, темная или системная</small></span></button>
+      </div>
+      <button type="button" class="reset-data-button" data-action="reset-seed">Сбросить локальные данные к seed JSON</button>
+    </div>
+  </dialog>
+
+  <div id="drop-overlay" class="drop-overlay" hidden>
+    <div><svg viewBox="0 0 24 24" fill="none"><path d="M12 20V8m0 0-4 4m4-4 4 4M5 4h14"/></svg><strong>Отпустите XLSX для импорта</strong><span>Текущие данные не изменятся без подтверждения</span></div>
+  </div>
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+</body>
+</html>

@@ -1,0 +1,697 @@
+{
+  "version": 1,
+  "settings": {
+    "currency": "RUB",
+    "locale": "ru-RU"
+  },
+  "categories": [
+    "Такси",
+    "Учеба",
+    "Еда",
+    "Инвестиции",
+    "Одежда",
+    "Развлечение",
+    "Здоровье",
+    "Бытовуха",
+    "Гигиена",
+    "ЖКХ",
+    "Непостоянные",
+    "Подписки",
+    "Прочее"
+  ],
+  "types": [
+    "Личный",
+    "Семейный",
+    "Жена"
+  ],
+  "months": [
+    {
+      "id": "2026-08",
+      "year": 2026,
+      "month": 8,
+      "name": "Август 2026",
+      "income": 150000,
+      "incomeNote": "инв - только купоны и доход по вкладам, зп - работа + доп работа",
+      "expenses": [
+        {
+          "id": "5e78a436-51ee-567e-8029-71b4ea4b3b08",
+          "day": 1,
+          "category": "ЖКХ",
+          "description": "За квартиру",
+          "amount": 25000,
+          "type": "Семейный"
+        },
+        {
+          "id": "d2c71ac1-92af-5e79-a33a-f46ad003413f",
+          "day": 1,
+          "category": "Еда",
+          "description": "Дом",
+          "amount": 850,
+          "type": "Семейный"
+        },
+        {
+          "id": "4fee27ab-9273-544c-93cf-5e71cdab3ca7",
+          "day": 1,
+          "category": "Еда",
+          "description": "Насте на Т",
+          "amount": 1000,
+          "type": "Семейный"
+        },
+        {
+          "id": "cc7992b6-137a-5262-b845-18c43fd4d49a",
+          "day": 2,
+          "category": "Еда",
+          "description": "Насте на Т",
+          "amount": 2000,
+          "type": "Семейный"
+        },
+        {
+          "id": "f57631f0-330e-53d4-9907-79d6672022a5",
+          "day": 2,
+          "category": "Еда",
+          "description": "КФС",
+          "amount": 243,
+          "type": "Семейный"
+        },
+        {
+          "id": "406a00f3-8b75-551b-8962-907e0cf4b5c9",
+          "day": 2,
+          "category": "Подписки",
+          "description": "Т Про",
+          "amount": 299,
+          "type": "Личный"
+        },
+        {
+          "id": "a7298feb-da46-51d4-8a52-1d9c2da5c636",
+          "day": 3,
+          "category": "Еда",
+          "description": "Насте на Т",
+          "amount": 1000,
+          "type": "Семейный"
+        },
+        {
+          "id": "eaf83ba3-2a4f-542d-b88e-f8b33aa16fe9",
+          "day": 3,
+          "category": "Еда",
+          "description": "Вода",
+          "amount": 66,
+          "type": "Семейный"
+        },
+        {
+          "id": "22e7c578-d2e7-58fc-8dc1-29139e96bcd1",
+          "day": 4,
+          "category": "Такси",
+          "description": "Автобус",
+          "amount": 180,
+          "type": "Семейный"
+        },
+        {
+          "id": "d6e5b8e1-f57f-5249-8f6b-a5a59de7a860",
+          "day": 4,
+          "category": "Здоровье",
+          "description": "Зубы Насте",
+          "amount": 12000,
+          "type": "Жена"
+        },
+        {
+          "id": "540791fc-5b03-5e36-845a-e2fb27958672",
+          "day": 4,
+          "category": "Здоровье",
+          "description": "Лекарство",
+          "amount": 164,
+          "type": "Семейный"
+        },
+        {
+          "id": "2553a562-1c30-5789-ab23-93865535020e",
+          "day": 4,
+          "category": "Еда",
+          "description": "Дом",
+          "amount": 513,
+          "type": "Семейный"
+        },
+        {
+          "id": "61f13bd7-6e06-5a57-965f-abcada664f9d",
+          "day": 5,
+          "category": "Еда",
+          "description": "Насте на Т",
+          "amount": 1000,
+          "type": "Семейный"
+        },
+        {
+          "id": "52bda3c1-0030-5db1-9019-1887b082108d",
+          "day": 5,
+          "category": "Здоровье",
+          "description": "Лекарство",
+          "amount": 997,
+          "type": "Семейный"
+        },
+        {
+          "id": "6c4147f7-962f-52f7-99f7-bca221bc0471",
+          "day": 5,
+          "category": "Подписки",
+          "description": "Ростелеком",
+          "amount": 700,
+          "type": "Семейный"
+        },
+        {
+          "id": "7f9b50e3-b769-51ef-b190-ab8d88f34533",
+          "day": 5,
+          "category": "Еда",
+          "description": "Дом",
+          "amount": 152,
+          "type": "Семейный"
+        },
+        {
+          "id": "887fdcc8-b774-5dbc-a1cd-1ed6acbc2780",
+          "day": 7,
+          "category": "Еда",
+          "description": "Насте на Т",
+          "amount": 1000,
+          "type": "Семейный"
+        },
+        {
+          "id": "8a9bc6d7-6c8e-534f-ba9c-0206210157f6",
+          "day": 7,
+          "category": "Еда",
+          "description": "КФС",
+          "amount": 109,
+          "type": "Семейный"
+        },
+        {
+          "id": "bd009f14-9799-55bf-a92b-99765cf60bf4",
+          "day": 8,
+          "category": "Еда",
+          "description": "Дом",
+          "amount": 2000,
+          "type": "Семейный"
+        },
+        {
+          "id": "d7a515fa-cdbe-5e7a-b99f-8d14a289d328",
+          "day": 8,
+          "category": "Подписки",
+          "description": "Чат гпт",
+          "amount": 1954,
+          "type": "Семейный"
+        },
+        {
+          "id": "70595e44-0215-5c34-b42d-58d430c68750",
+          "day": 9,
+          "category": "Еда",
+          "description": "Насте на Т",
+          "amount": 1000,
+          "type": "Семейный"
+        },
+        {
+          "id": "f87a01ff-0f66-5cd0-b937-372dfc9bfbe3",
+          "day": 11,
+          "category": "Прочее",
+          "description": "Насте на альфу",
+          "amount": 4100,
+          "type": "Жена"
+        },
+        {
+          "id": "6c44f4de-b851-5b67-a9ce-d5bb16133a2c",
+          "day": 12,
+          "category": "Подписки",
+          "description": "Ускоритель",
+          "amount": 675,
+          "type": "Семейный"
+        },
+        {
+          "id": "d09a34e7-b232-5535-ad09-5e9ef6667999",
+          "day": 12,
+          "category": "Еда",
+          "description": "Насте на Т",
+          "amount": 1400,
+          "type": "Семейный"
+        },
+        {
+          "id": "2a8132ed-779d-5390-a58e-9d49f228a1b2",
+          "day": 13,
+          "category": "Подписки",
+          "description": "Профи ру",
+          "amount": 100,
+          "type": "Личный"
+        },
+        {
+          "id": "95c56017-b4c2-5216-8dfe-a2b0a65db63c",
+          "day": 14,
+          "category": "Еда",
+          "description": "Насте на Т",
+          "amount": 1000,
+          "type": "Семейный"
+        },
+        {
+          "id": "0cb05906-d44e-5743-ad98-76f6030a6e3c",
+          "day": 14,
+          "category": "Прочее",
+          "description": "Держатель тела",
+          "amount": 700,
+          "type": "Жена"
+        },
+        {
+          "id": "fac4ad1d-3716-5eec-907e-80138a49c529",
+          "day": 15,
+          "category": "Еда",
+          "description": "Насте на Т",
+          "amount": 500,
+          "type": "Семейный"
+        },
+        {
+          "id": "758944e1-d782-52f1-9736-549d73d09ea7",
+          "day": 15,
+          "category": "Еда",
+          "description": "Доставка",
+          "amount": 488,
+          "type": "Семейный"
+        },
+        {
+          "id": "54409de3-e46f-5bfb-9ab9-048e66ec2ccf",
+          "day": 16,
+          "category": "Подписки",
+          "description": "Yota",
+          "amount": 650,
+          "type": "Личный"
+        },
+        {
+          "id": "1867025c-1e86-59c8-98c6-bdcdc102947f",
+          "day": 16,
+          "category": "Прочее",
+          "description": "Загранник Насте",
+          "amount": 6000,
+          "type": "Жена"
+        },
+        {
+          "id": "c4855a17-c8ab-5666-b6dd-2fab5eab482e",
+          "day": 16,
+          "category": "Еда",
+          "description": "Дом",
+          "amount": 1000,
+          "type": "Семейный"
+        },
+        {
+          "id": "3e1a1ace-6f70-5678-b431-187709043c68",
+          "day": 16,
+          "category": "Такси",
+          "description": "По Ижу",
+          "amount": 90,
+          "type": "Семейный"
+        },
+        {
+          "id": "2069b078-7e37-54ef-ba54-74641f8a669b",
+          "day": 16,
+          "category": "Еда",
+          "description": "Дом",
+          "amount": 259,
+          "type": "Семейный"
+        },
+        {
+          "id": "61ee36da-eb4e-51bb-874a-9f934a942b63",
+          "day": 18,
+          "category": "Еда",
+          "description": "Насте на Т",
+          "amount": 1000,
+          "type": "Семейный"
+        },
+        {
+          "id": "eb74308f-f578-546d-b972-8e98be3e2579",
+          "day": 18,
+          "category": "Здоровье",
+          "description": "Маме с аплик",
+          "amount": 698,
+          "type": "Личный"
+        },
+        {
+          "id": "b62ac4e4-bc32-55d5-a020-b3809fc7fb98",
+          "day": 18,
+          "category": "Учеба",
+          "description": "Техновек",
+          "amount": 10000,
+          "type": "Личный"
+        },
+        {
+          "id": "3914d90b-a8e9-547f-a9bf-8dc1921820a5",
+          "day": 19,
+          "category": "Еда",
+          "description": "Дом",
+          "amount": 371,
+          "type": "Семейный"
+        },
+        {
+          "id": "a58c6ab9-048a-58f8-8645-7cde12eb7b4d",
+          "day": 20,
+          "category": "Бытовуха",
+          "description": "Зарядка для пылес",
+          "amount": 642,
+          "type": "Семейный"
+        }
+      ]
+    },
+    {
+      "id": "2026-07",
+      "year": 2026,
+      "month": 7,
+      "name": "Июль 2026",
+      "income": 150000,
+      "incomeNote": "инв - только купоны и доход по вкладам, зп - работа + доп работа",
+      "expenses": [
+        {
+          "id": "ff5e707a-5072-54b6-9cdd-0e90d87617a7",
+          "day": 1,
+          "category": "ЖКХ",
+          "description": "За квартиру",
+          "amount": 25000,
+          "type": "Семейный"
+        },
+        {
+          "id": "54d9285a-febf-5e9a-a943-40f49771ebeb",
+          "day": 1,
+          "category": "Еда",
+          "description": "На альфу Насте",
+          "amount": 6000,
+          "type": "Семейный"
+        },
+        {
+          "id": "6cdaac25-3949-5c79-bafa-e7f03ab9caca",
+          "day": 1,
+          "category": "Еда",
+          "description": "Дом",
+          "amount": 260,
+          "type": "Семейный"
+        },
+        {
+          "id": "02a34bd7-49f9-5819-9766-a64930327e07",
+          "day": 2,
+          "category": "Еда",
+          "description": "На альфу Насте",
+          "amount": 1000,
+          "type": "Семейный"
+        },
+        {
+          "id": "736476af-8559-5523-a075-dc7edb49a88c",
+          "day": 2,
+          "category": "Здоровье",
+          "description": "Зал",
+          "amount": 1600,
+          "type": "Семейный"
+        },
+        {
+          "id": "93876d3f-b4a9-585c-87c5-4b886a9aff38",
+          "day": 2,
+          "category": "Бытовуха",
+          "description": "Озон",
+          "amount": 167,
+          "type": "Семейный"
+        },
+        {
+          "id": "edea1436-aa3b-52af-8b2b-3a6423274d25",
+          "day": 3,
+          "category": "Еда",
+          "description": "На альфу Насте",
+          "amount": 5000,
+          "type": "Семейный"
+        },
+        {
+          "id": "c6d0dc7f-f2c7-55af-b1a8-54abb288a5d2",
+          "day": 3,
+          "category": "Подписки",
+          "description": "Ростелеком",
+          "amount": 1060,
+          "type": "Семейный"
+        },
+        {
+          "id": "e26b0828-c915-517b-bcae-38711acdfe64",
+          "day": 3,
+          "category": "Подписки",
+          "description": "Т Про",
+          "amount": 299,
+          "type": "Личный"
+        },
+        {
+          "id": "aec3b056-5fc6-5045-a57f-7fe5a06b00ad",
+          "day": 4,
+          "category": "Одежда",
+          "description": "Кросы и штаны",
+          "amount": 1200,
+          "type": "Личный"
+        },
+        {
+          "id": "4c6dfc03-012a-58ac-931b-98169ef08a9f",
+          "day": 4,
+          "category": "Одежда",
+          "description": "Джинсы Насте",
+          "amount": 1500,
+          "type": "Жена"
+        },
+        {
+          "id": "273996a3-cfde-5bae-be46-95b0abe965e7",
+          "day": 4,
+          "category": "Здоровье",
+          "description": "Анализы",
+          "amount": 2500,
+          "type": "Личный"
+        },
+        {
+          "id": "1eaf6cd5-e34f-503e-835e-fe8260bdb482",
+          "day": 4,
+          "category": "Такси",
+          "description": "ПО Ижу",
+          "amount": 180,
+          "type": "Семейный"
+        },
+        {
+          "id": "f97a5947-d2f9-51b4-9e6b-ca372ba316d6",
+          "day": 4,
+          "category": "Еда",
+          "description": "Дядя Арчи",
+          "amount": 696,
+          "type": "Семейный"
+        },
+        {
+          "id": "d6892a33-5488-5072-821d-9dd08236b746",
+          "day": 5,
+          "category": "Здоровье",
+          "description": "Зубы Насте",
+          "amount": 6500,
+          "type": "Жена"
+        },
+        {
+          "id": "a1d6365e-01ba-5bf8-8877-105111547bb0",
+          "day": 5,
+          "category": "Подписки",
+          "description": "Чат гпт",
+          "amount": 1800,
+          "type": "Семейный"
+        },
+        {
+          "id": "1b42de82-2fcd-50b9-a292-6202c99cea7e",
+          "day": 8,
+          "category": "Здоровье",
+          "description": "Зал",
+          "amount": 15000,
+          "type": "Жена"
+        },
+        {
+          "id": "fc58f688-c19c-5b77-90ce-f3860e728211",
+          "day": 10,
+          "category": "Еда",
+          "description": "На альфу Насте",
+          "amount": 2000,
+          "type": "Семейный"
+        },
+        {
+          "id": "08e81da0-7ff5-5a1b-9bbe-1d7a2402e86a",
+          "day": 13,
+          "category": "Учеба",
+          "description": "Техновек",
+          "amount": 10000,
+          "type": "Личный"
+        },
+        {
+          "id": "5c1dc562-7bc2-5688-803a-a6708e0e838f",
+          "day": 14,
+          "category": "Прочее",
+          "description": "Насте",
+          "amount": 1300,
+          "type": "Жена"
+        },
+        {
+          "id": "b026fcda-8e5d-5330-8e3a-50755d2c4951",
+          "day": 14,
+          "category": "Еда",
+          "description": "На альфу Насте",
+          "amount": 2000,
+          "type": "Семейный"
+        },
+        {
+          "id": "c01d2c90-278d-5289-b16c-8e518c5d129d",
+          "day": 16,
+          "category": "Еда",
+          "description": "На альфу Насте",
+          "amount": 2000,
+          "type": "Семейный"
+        },
+        {
+          "id": "702c4aa3-d568-5d35-bac0-ab3fdeb918b4",
+          "day": 17,
+          "category": "Подписки",
+          "description": "Yota",
+          "amount": 762,
+          "type": "Личный"
+        },
+        {
+          "id": "bc67d986-cc07-554d-9af5-b949a279bcd2",
+          "day": 18,
+          "category": "Такси",
+          "description": "Втк",
+          "amount": 400,
+          "type": "Семейный"
+        },
+        {
+          "id": "d6d2b4da-b7a9-5ca6-ae19-f63e2449cc7b",
+          "day": 18,
+          "category": "Такси",
+          "description": "Иж",
+          "amount": 400,
+          "type": "Семейный"
+        },
+        {
+          "id": "1c2f88b2-38d9-58ee-bf40-66013a32b95c",
+          "day": 18,
+          "category": "Прочее",
+          "description": "Профи",
+          "amount": 120,
+          "type": "Семейный"
+        },
+        {
+          "id": "8e8edbbf-9175-57f9-abd2-bf7eca8e5e0b",
+          "day": 19,
+          "category": "Еда",
+          "description": "Завтрак",
+          "amount": 536,
+          "type": "Семейный"
+        },
+        {
+          "id": "31a77201-9b1d-5f30-8b8b-fd91c2ab5a6c",
+          "day": 19,
+          "category": "Одежда",
+          "description": "Носки",
+          "amount": 263,
+          "type": "Личный"
+        },
+        {
+          "id": "af5de729-f30d-5c1c-84a3-06be3a2719a4",
+          "day": 22,
+          "category": "Еда",
+          "description": "На альфу Насте",
+          "amount": 2000,
+          "type": "Семейный"
+        },
+        {
+          "id": "f732a72a-cf85-5076-a4d3-87c332c7c4ab",
+          "day": 23,
+          "category": "Еда",
+          "description": "Вода",
+          "amount": 66,
+          "type": "Семейный"
+        },
+        {
+          "id": "593c655c-8804-5102-b882-2ea83c864af5",
+          "day": 25,
+          "category": "Такси",
+          "description": "Втк",
+          "amount": 536,
+          "type": "Семейный"
+        },
+        {
+          "id": "e87d260f-e61b-52ba-b616-7fd59e126930",
+          "day": 25,
+          "category": "Такси",
+          "description": "Шаркан",
+          "amount": 499,
+          "type": "Семейный"
+        },
+        {
+          "id": "03490e22-d691-55de-a111-e0478ff6bcea",
+          "day": 25,
+          "category": "Еда",
+          "description": "Дом",
+          "amount": 2063,
+          "type": "Семейный"
+        },
+        {
+          "id": "0034150a-3f91-5d90-9774-b95e69141608",
+          "day": 26,
+          "category": "Такси",
+          "description": "Иж",
+          "amount": 500,
+          "type": "Семейный"
+        },
+        {
+          "id": "381d2171-8b06-5809-bc01-e6aabe50a6a9",
+          "day": 27,
+          "category": "Одежда",
+          "description": "Кепка",
+          "amount": 227,
+          "type": "Личный"
+        },
+        {
+          "id": "24b146e9-0f8d-5ac2-8bfa-0c5c8d284c6a",
+          "day": 27,
+          "category": "Здоровье",
+          "description": "Зал",
+          "amount": 2000,
+          "type": "Личный"
+        },
+        {
+          "id": "874c522a-1bda-5fdf-b48a-0e70f323420c",
+          "day": 28,
+          "category": "Еда",
+          "description": "Вода",
+          "amount": 99,
+          "type": "Семейный"
+        },
+        {
+          "id": "d7827248-e045-5740-90ed-cf8c93afcae3",
+          "day": 29,
+          "category": "Еда",
+          "description": "Дом",
+          "amount": 150,
+          "type": "Семейный"
+        },
+        {
+          "id": "89f14d29-9bce-5528-bf76-28655be64a73",
+          "day": 29,
+          "category": "Еда",
+          "description": "Суши",
+          "amount": 1000,
+          "type": "Семейный"
+        },
+        {
+          "id": "a98b3cdd-1f20-5b31-9a88-57822102438d",
+          "day": 30,
+          "category": "Еда",
+          "description": "На альфу Насте",
+          "amount": 1000,
+          "type": "Семейный"
+        },
+        {
+          "id": "a403b419-924e-5f3e-9ed1-14a66b19cc18",
+          "day": 30,
+          "category": "Развлечение",
+          "description": "Кофе",
+          "amount": 195,
+          "type": "Семейный"
+        },
+        {
+          "id": "591e9455-4998-582e-9c83-b49b609a19fc",
+          "day": 31,
+          "category": "Еда",
+          "description": "Дом",
+          "amount": 318,
+          "type": "Семейный"
+        }
+      ]
+    }
+  ]
+}
