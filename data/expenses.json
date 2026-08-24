@@ -408,22 +408,6 @@
           "description": "Втк",
           "amount": 250,
           "type": "Личный"
-        },
-        {
-          "id": "605828be-c41b-4a01-bc9a-46d6e1c8e8c3",
-          "day": 23,
-          "category": "Еда",
-          "description": "Насте на Т",
-          "amount": 1000,
-          "type": "Семейный"
-        },
-        {
-          "id": "502d4e22-5b25-4957-b7d7-622e6f1d121e",
-          "day": 23,
-          "category": "Развлечения",
-          "description": "Кофельница",
-          "amount": 1350,
-          "type": "Семейный"
         }
       ]
     },
