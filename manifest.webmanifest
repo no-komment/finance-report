@@ -2,9 +2,11 @@
   "name": "Расходы",
   "short_name": "Расходы",
   "description": "Личный учет расходов",
-  "id": "./",
-  "start_url": "./",
-  "scope": "./",
+
+  "id": "/finance-report/",
+  "start_url": "/finance-report/",
+  "scope": "/finance-report/",
+
   "display": "standalone",
   "orientation": "portrait-primary",
   "background_color": "#1d1f1b",
