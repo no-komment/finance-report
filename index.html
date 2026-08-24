@@ -5,6 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="color-scheme" content="light dark">
   <meta name="theme-color" content="#f4f3ef">
+  <link rel="manifest" href="./manifest.webmanifest">
+
+  <meta name="theme-color" content="#1d1f1b">
+
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Расходы">
+
+  <link rel="apple-touch-icon" href="./assets/icons/icon-192.png">
   <title>Расходы</title>
   <link rel="stylesheet" href="./css/styles.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" defer></script>
@@ -321,5 +330,17 @@
     <div><svg viewBox="0 0 24 24" fill="none"><path d="M12 20V8m0 0-4 4m4-4 4 4M5 4h14"/></svg><strong>Отпустите XLSX для импорта</strong><span>Текущие данные не изменятся без подтверждения</span></div>
   </div>
   <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker
+          .register("./sw.js")
+          .catch((error) => {
+            console.error("Service Worker registration failed:", error);
+          });
+      });
+    }
+  </script>
 </body>
 </html>
