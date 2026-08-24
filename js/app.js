@@ -67,6 +67,8 @@ function bindEvents() {
 }
 
 function handleDocumentClick(e) {
+  closeMenusOutside(e.target);
+
   const close = e.target.closest('[data-close]');
   if (close) document.getElementById(close.dataset.close)?.close();
 
@@ -331,6 +333,11 @@ function pluralRows(n) {
 }
 
 function closeRowMenus() { $$('.row-menu[open]').forEach((menu) => menu.removeAttribute('open')); }
+function closeMenusOutside(target) {
+  $$('details[open]').forEach((menu) => {
+    if (!menu.contains(target)) menu.removeAttribute('open');
+  });
+}
 
 function td(text, label='') { const el = document.createElement('td'); el.textContent = text; if (label) el.dataset.label = label; return el; }
 function actionButton(text, attr, value, cls='') { const b=document.createElement('button'); b.type='button'; b.className=`row-action ${cls}`; b.textContent=text; b.setAttribute(attr,value); return b; }
@@ -514,10 +521,36 @@ function deleteReference(kind, value) {
 }
 
 function openGithubDialog() {
-  const s=getGithubSettings(); $('#gh-owner').value=s.owner||''; $('#gh-repo').value=s.repo||''; $('#gh-branch').value=s.branch||'main'; $('#gh-path').value=s.path||'data/expenses.json'; $('#gh-token').value=sessionStorage.getItem('expenses-app:gh-token')||''; clearGithubConflict(); $('#github-dialog').showModal();
+  const s = getGithubSettings();
+  const persistentToken = localStorage.getItem('expenses-app:gh-token:persistent') || '';
+  const sessionToken = sessionStorage.getItem('expenses-app:gh-token') || '';
+
+  $('#gh-owner').value = s.owner || '';
+  $('#gh-repo').value = s.repo || '';
+  $('#gh-branch').value = s.branch || 'main';
+  $('#gh-path').value = s.path || 'data/expenses.json';
+  $('#gh-token').value = sessionToken || persistentToken;
+  $('#gh-remember-token').checked = Boolean(persistentToken);
+
+  clearGithubConflict();
+  $('#github-dialog').showModal();
 }
 function currentGithubSettings() { return { owner:normalizeText($('#gh-owner').value), repo:normalizeText($('#gh-repo').value), branch:normalizeText($('#gh-branch').value)||'main', path:normalizeText($('#gh-path').value)||'data/expenses.json' }; }
-function saveGithubForm() { const s=currentGithubSettings(); saveGithubSettings(s); const token=$('#gh-token').value; if(token)sessionStorage.setItem('expenses-app:gh-token',token); return {s,token}; }
+function saveGithubForm() {
+  const s = currentGithubSettings();
+  saveGithubSettings(s);
+
+  const token = $('#gh-token').value.trim();
+  const remember = $('#gh-remember-token').checked;
+
+  if (token) sessionStorage.setItem('expenses-app:gh-token', token);
+  else sessionStorage.removeItem('expenses-app:gh-token');
+
+  if (remember && token) localStorage.setItem('expenses-app:gh-token:persistent', token);
+  else localStorage.removeItem('expenses-app:gh-token:persistent');
+
+  return { s, token };
+}
 async function githubLoad() {
   try { const {s,token}=saveGithubForm(); $('#gh-status').textContent='Загрузка…'; const remote=await fetchGithubData(s,token); data=migrateData(remote.data); lastGithubSha=remote.sha; selectedMonthId=data.months[0]?.id||''; persist(); renderAll(); $('#gh-status').textContent='Свежая версия загружена.'; toast('Данные загружены из GitHub'); }
   catch(error){$('#gh-status').textContent=error.message;}

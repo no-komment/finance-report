@@ -313,13 +313,20 @@
   <dialog id="github-dialog">
     <div class="dialog-form wide">
       <div class="dialog-head"><div><p class="dialog-kicker">Опционально</p><h2>GitHub Sync</h2></div><button type="button" class="close-button" data-close="github-dialog" aria-label="Закрыть"><svg viewBox="0 0 24 24" fill="none"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
-      <p class="notice">PAT не записывается в исходники или localStorage. В этой вкладке он хранится только в sessionStorage до закрытия браузерной сессии.</p>
+      <p class="notice">По умолчанию PAT хранится только до закрытия браузерной сессии. На личном устройстве можно включить постоянное хранение в этом браузере.</p>
       <div class="form-grid">
         <label><span>Owner</span><input id="gh-owner"></label>
         <label><span>Repository</span><input id="gh-repo"></label>
         <label><span>Branch</span><input id="gh-branch" value="main"></label>
         <label><span>JSON path</span><input id="gh-path" value="data/expenses.json"></label>
         <label class="full"><span>Fine-grained PAT</span><input id="gh-token" type="password" autocomplete="off"></label>
+        <div class="full" style="display:flex;align-items:flex-start;gap:10px;padding-top:2px;">
+          <input id="gh-remember-token" type="checkbox" style="width:17px;height:17px;min-height:0;flex:0 0 auto;margin:2px 0 0;padding:0;accent-color:var(--accent-strong);">
+          <label for="gh-remember-token" style="display:grid;gap:2px;cursor:pointer;">
+            <strong style="font-size:12px;">Запомнить PAT на этом устройстве</strong>
+            <small style="color:var(--text-tertiary);font-size:11px;line-height:1.35;">Токен сохранится в localStorage этого браузера. Используйте только на личном устройстве.</small>
+          </label>
+        </div>
       </div>
       <div id="gh-status" class="status-line muted"></div>
       <div id="gh-conflict" class="conflict" hidden>
@@ -351,7 +358,6 @@
     <div><svg viewBox="0 0 24 24" fill="none"><path d="M12 20V8m0 0-4 4m4-4 4 4M5 4h14"/></svg><strong>Отпустите XLSX для импорта</strong><span>Текущие данные не изменятся без подтверждения</span></div>
   </div>
   <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
-
   <script>
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => {
