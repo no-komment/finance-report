@@ -416,6 +416,22 @@
           "description": "Насте на Т",
           "amount": 1000,
           "type": "Семейный"
+        },
+        {
+          "id": "cc7c0d7f-fe19-44c1-bc92-742bcfae4255",
+          "day": 23,
+          "category": "Развлечения",
+          "description": "Кофельница",
+          "amount": 1350,
+          "type": "Семейный"
+        },
+        {
+          "id": "7235a649-ae42-484f-83f7-da37880ec858",
+          "day": 24,
+          "category": "Прочее",
+          "description": "Профи ру",
+          "amount": 200,
+          "type": "Семейный"
         }
       ]
     },
