@@ -14,7 +14,7 @@ let lastGithubSha = null;
 let pendingRemoteConflict = null;
 let toastTimer;
 
-const filters = { search: '', category: '', type: '', sort: 'day-asc' };
+const filters = { search: '', category: '', type: '', sort: 'day-desc' };
 
 init().catch((error) => fatal(error));
 
@@ -82,7 +82,7 @@ function handleDocumentClick(e) {
   const filterChip = e.target.closest('[data-filter-clear]');
   if (filterChip) {
     const key = filterChip.dataset.filterClear;
-    if (key in filters) filters[key] = key === 'sort' ? 'day-asc' : '';
+    if (key in filters) filters[key] = key === 'sort' ? 'day-desc' : '';
     syncFilterControls();
     renderExpenses();
   }
@@ -301,7 +301,7 @@ function renderActiveFilters() {
   if (filters.search) chips.push(['search', `Поиск: ${filters.search}`]);
   if (filters.category) chips.push(['category', filters.category]);
   if (filters.type) chips.push(['type', filters.type]);
-  if (filters.sort !== 'day-asc') {
+  if (filters.sort !== 'day-desc') {
     const labels = { 'day-desc':'Сначала поздние', 'amount-desc':'Сначала крупные', 'amount-asc':'Сначала мелкие' };
     chips.push(['sort', labels[filters.sort] || 'Сортировка']);
   }
@@ -564,7 +564,7 @@ function mergeRemoteConflict() { if(!pendingRemoteConflict)return; data=mergeDat
 function clearGithubConflict(){pendingRemoteConflict=null; $('#gh-conflict').hidden=true;}
 
 function resetFilters(render=true){
-  filters.search=''; filters.category=''; filters.type=''; filters.sort='day-asc';
+  filters.search=''; filters.category=''; filters.type=''; filters.sort='day-desc';
   syncFilterControls();
   if(render) renderExpenses();
 }
