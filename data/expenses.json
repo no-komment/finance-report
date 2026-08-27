@@ -445,8 +445,16 @@
           "id": "f8b63a63-2c18-4e41-81d7-3c1297d8279d",
           "day": 26,
           "category": "Еда",
-          "description": "Дом",
+          "description": "Насте на Т",
           "amount": 2000,
+          "type": "Семейный"
+        },
+        {
+          "id": "b80a5611-da4b-400c-a66f-1801b1d52b72",
+          "day": 27,
+          "category": "Еда",
+          "description": "Насте на Т",
+          "amount": 1000,
           "type": "Семейный"
         }
       ]
