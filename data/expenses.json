@@ -432,6 +432,22 @@
           "description": "Профи ру",
           "amount": 200,
           "type": "Семейный"
+        },
+        {
+          "id": "259ef4cd-f6f1-40f1-aa65-37d3a1262a4f",
+          "day": 25,
+          "category": "Еда",
+          "description": "Вода",
+          "amount": 66,
+          "type": "Семейный"
+        },
+        {
+          "id": "f8b63a63-2c18-4e41-81d7-3c1297d8279d",
+          "day": 26,
+          "category": "Еда",
+          "description": "Дом",
+          "amount": 2000,
+          "type": "Семейный"
         }
       ]
     },
