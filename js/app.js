@@ -44,6 +44,9 @@ function bindEvents() {
   $('#expense-form').addEventListener('submit', saveExpenseFromForm);
   $('#expense-amount').addEventListener('input', updateAmountPreview);
   $('#month-form').addEventListener('submit', saveMonthFromForm);
+  $('#add-income-source-btn').addEventListener('click', () => addIncomeSourceRow());
+  $('#income-sources').addEventListener('input', updateIncomeSourcesTotal);
+  $('#income-sources').addEventListener('click', handleIncomeSourceClick);
   $('#reference-form').addEventListener('submit', saveReferenceFromForm);
   $('#search-input').addEventListener('input', (e) => { filters.search = e.target.value; renderExpenses(); });
   $('#category-filter').addEventListener('change', (e) => { filters.category = e.target.value; renderExpenses(); });
@@ -492,19 +495,139 @@ function openMonthDialog(mode) {
   const now = new Date();
   $('#month-number').value = String(creating ? now.getMonth()+1 : current.month);
   $('#month-year').value = String(creating ? now.getFullYear() : current.year);
-  $('#month-income').value = creating ? '' : current.income;
   $('#month-note').value = creating ? '' : current.incomeNote;
+  renderIncomeSources(creating
+    ? [{ id: '', name: 'Основной доход', amount: 0 }]
+    : current.incomeSources?.length
+      ? current.incomeSources
+      : [{ id: '', name: 'Доход', amount: current.income || 0 }]);
   $('#month-dialog').showModal();
+}
+
+function renderIncomeSources(sources) {
+  const root = $('#income-sources');
+  root.replaceChildren();
+  for (const source of sources) addIncomeSourceRow(source, false);
+  if (!root.children.length) addIncomeSourceRow({ name: 'Основной доход', amount: 0 }, false);
+  updateIncomeSourceRemoveButtons();
+  updateIncomeSourcesTotal();
+}
+
+function addIncomeSourceRow(source = {}, focus = true) {
+  const root = $('#income-sources');
+  const row = document.createElement('div');
+  row.className = 'income-source-row';
+  row.dataset.sourceId = source.id || '';
+
+  const nameLabel = document.createElement('label');
+  const nameCaption = document.createElement('span'); nameCaption.textContent = 'Источник';
+  const nameInput = document.createElement('input');
+  nameInput.type = 'text';
+  nameInput.className = 'income-source-name';
+  nameInput.placeholder = 'Например, зарплата';
+  nameInput.autocomplete = 'off';
+  nameInput.value = source.name || '';
+  nameLabel.append(nameCaption, nameInput);
+
+  const amountLabel = document.createElement('label');
+  const amountCaption = document.createElement('span'); amountCaption.textContent = 'Сумма';
+  const moneyWrap = document.createElement('div'); moneyWrap.className = 'money-input';
+  const amountInput = document.createElement('input');
+  amountInput.type = 'number';
+  amountInput.className = 'income-source-amount';
+  amountInput.min = '0';
+  amountInput.step = '0.01';
+  amountInput.inputMode = 'decimal';
+  amountInput.value = source.amount > 0 ? String(source.amount) : '';
+  const currency = document.createElement('span'); currency.textContent = '₽';
+  moneyWrap.append(amountInput, currency);
+  amountLabel.append(amountCaption, moneyWrap);
+
+  const remove = document.createElement('button');
+  remove.type = 'button';
+  remove.className = 'income-source-remove';
+  remove.dataset.removeIncomeSource = '';
+  remove.setAttribute('aria-label', 'Удалить источник дохода');
+  remove.title = 'Удалить источник';
+  remove.textContent = '×';
+
+  row.append(nameLabel, amountLabel, remove);
+  root.append(row);
+  updateIncomeSourceRemoveButtons();
+  updateIncomeSourcesTotal();
+  if (focus) requestAnimationFrame(() => nameInput.focus());
+}
+
+function handleIncomeSourceClick(e) {
+  const remove = e.target.closest('[data-remove-income-source]');
+  if (!remove) return;
+  const rows = $$('#income-sources .income-source-row');
+  if (rows.length <= 1) return;
+  remove.closest('.income-source-row')?.remove();
+  updateIncomeSourceRemoveButtons();
+  updateIncomeSourcesTotal();
+}
+
+function updateIncomeSourceRemoveButtons() {
+  const rows = $$('#income-sources .income-source-row');
+  for (const row of rows) {
+    const button = row.querySelector('[data-remove-income-source]');
+    if (button) button.disabled = rows.length <= 1;
+  }
+}
+
+function incomeSourceAmount(value) {
+  const normalized = String(value ?? '').trim().replace(',', '.');
+  if (!normalized) return 0;
+  const amount = Number(normalized);
+  if (!Number.isFinite(amount) || amount < 0) throw new Error('Сумма источника дохода должна быть неотрицательным числом.');
+  return Math.round((amount + Number.EPSILON) * 100) / 100;
+}
+
+function collectIncomeSources() {
+  const sources = [];
+  for (const row of $$('#income-sources .income-source-row')) {
+    const name = normalizeText(row.querySelector('.income-source-name')?.value);
+    const rawAmount = row.querySelector('.income-source-amount')?.value || '';
+    const amount = incomeSourceAmount(rawAmount);
+    if (!name && !String(rawAmount).trim()) continue;
+    if (!name) throw new Error('Укажите название источника дохода.');
+    sources.push({ id: row.dataset.sourceId || '', name, amount });
+  }
+  return sources.length ? sources : [{ id: '', name: 'Основной доход', amount: 0 }];
+}
+
+function updateIncomeSourcesTotal() {
+  let total = 0;
+  for (const input of $$('#income-sources .income-source-amount')) {
+    const amount = Number(String(input.value || '').replace(',', '.'));
+    if (Number.isFinite(amount) && amount > 0) total += amount;
+  }
+  $('#month-income-total').textContent = formatMoney(Math.round((total + Number.EPSILON) * 100) / 100, data?.settings);
 }
 
 function saveMonthFromForm(e) {
   e.preventDefault();
   try {
+    const incomeSources = collectIncomeSources();
+    const income = incomeSources.reduce((sum, source) => sum + source.amount, 0);
     if ($('#month-mode').value === 'create') {
-      const month = createMonth(data, { year:Number($('#month-year').value), month:Number($('#month-number').value), income:Number($('#month-income').value)||0, incomeNote:$('#month-note').value });
+      const month = createMonth(data, {
+        year: Number($('#month-year').value),
+        month: Number($('#month-number').value),
+        income,
+        incomeSources,
+        incomeNote: $('#month-note').value,
+      });
       selectedMonthId = month.id;
     } else {
-      const month = getMonth(); month.income = Math.max(0, Number($('#month-income').value)||0); month.incomeNote = normalizeText($('#month-note').value);
+      const month = getMonth();
+      month.incomeSources = incomeSources.map((source) => ({
+        ...source,
+        id: source.id || (globalThis.crypto?.randomUUID?.() || `income-${Date.now()}-${Math.random().toString(16).slice(2)}`),
+      }));
+      month.income = income;
+      month.incomeNote = normalizeText($('#month-note').value);
     }
     persist(); $('#month-dialog').close(); renderAll(); toast('Месяц сохранен');
   } catch (error) { toast(error.message); }

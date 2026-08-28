@@ -58,6 +58,7 @@ export function parseWorkbook(workbook) {
       year: monthMeta.year,
       month: monthMeta.month,
       name: monthName(monthMeta.year, monthMeta.month),
+      incomeSources: incomeInfo.sources,
       income: incomeInfo.income,
       incomeNote: incomeInfo.note,
       expenses,
@@ -92,19 +93,33 @@ function findHeader(rows) {
 }
 
 function findIncome(rows) {
+  let income = 0;
+  let note = '';
+  const sources = [];
+
   for (const row of rows) {
     for (let c = 0; c < row.length; c++) {
-      if (normalizeText(row[c]) !== 'Заработок (инв. + зп)') continue;
-      const income = numberFromCell(row[c + 1]) || 0;
-      let note = '';
-      for (let i = c + 2; i < Math.min(row.length, c + 7); i++) {
-        const candidate = normalizeText(row[i]);
-        if (candidate) { note = candidate; break; }
+      const label = normalizeText(row[c]);
+      if (label === 'Заработок (инв. + зп)') {
+        income = numberFromCell(row[c + 1]) || 0;
+        for (let i = c + 2; i < Math.min(row.length, c + 7); i++) {
+          const candidate = normalizeText(row[i]);
+          if (candidate) { note = candidate; break; }
+        }
       }
-      return { income, note };
+      if (label === 'Источник дохода') {
+        const amount = numberFromCell(row[c + 1]);
+        const name = normalizeText(row[c + 2]);
+        if (amount !== null && amount >= 0) {
+          sources.push({ id: uid(), name: name || `Доход ${sources.length + 1}`, amount });
+        }
+      }
     }
   }
-  return { income: 0, note: '' };
+
+  if (!sources.length) sources.push({ id: uid(), name: 'Доход', amount: income });
+  const sourcesTotal = sources.reduce((sum, source) => sum + source.amount, 0);
+  return { income: sourcesTotal, note, sources };
 }
 
 function numberFromCell(value) {
@@ -131,6 +146,9 @@ export function exportXlsx(data) {
     }
     rows.push(['', '', '', 'Общие', t.total]);
     rows.push(['', '', '', 'Заработок (инв. + зп)', month.income, escapeCsvLikeFormula(month.incomeNote)]);
+    for (const source of month.incomeSources || []) {
+      rows.push(['', '', '', 'Источник дохода', source.amount, escapeCsvLikeFormula(source.name)]);
+    }
     rows.push(['', '', '', 'Итого', t.balance]);
 
     const ws = XLSX.utils.aoa_to_sheet(rows);

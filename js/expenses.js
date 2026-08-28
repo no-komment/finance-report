@@ -44,18 +44,40 @@ function validateMonth(month) {
   const m = Number(month.month);
   if (!Number.isInteger(year) || year < 1900 || year > 2200) throw new Error('Некорректный год месяца.');
   if (!Number.isInteger(m) || m < 1 || m > 12) throw new Error('Некорректный номер месяца.');
-  const income = Number(month.income ?? 0);
-  if (!Number.isFinite(income) || income < 0) throw new Error(`Некорректный доход в ${monthName(year, m)}.`);
+
+  const legacyIncome = Number(month.income ?? 0);
+  if (!Number.isFinite(legacyIncome) || legacyIncome < 0) throw new Error(`Некорректный доход в ${monthName(year, m)}.`);
+  const incomeSources = validateIncomeSources(month.incomeSources, legacyIncome, year, m);
+  const income = incomeSources.reduce((sum, source) => sum + source.amount, 0);
   const expenses = Array.isArray(month.expenses) ? month.expenses.map((e) => validateExpense(e, year, m)) : [];
   return {
     id: monthId(year, m),
     year,
     month: m,
     name: monthName(year, m),
+    incomeSources,
     income,
     incomeNote: normalizeText(month.incomeNote),
     expenses,
   };
+}
+
+function validateIncomeSources(value, legacyIncome, year, month) {
+  const rawSources = Array.isArray(value) && value.length
+    ? value
+    : [{ name: 'Доход', amount: legacyIncome }];
+
+  return rawSources.map((source, index) => {
+    const amount = Number(source?.amount ?? 0);
+    if (!Number.isFinite(amount) || amount < 0) {
+      throw new Error(`Некорректная сумма источника дохода в ${monthName(year, month)}.`);
+    }
+    return {
+      id: normalizeText(source?.id) || uid(),
+      name: normalizeText(source?.name) || `Доход ${index + 1}`,
+      amount,
+    };
+  });
 }
 
 function validateExpense(expense, year, month) {
@@ -86,10 +108,17 @@ export function uniqueStrings(values) {
   return result;
 }
 
-export function createMonth(data, { year, month, income = 0, incomeNote = '' }) {
+export function createMonth(data, { year, month, income = 0, incomeSources = null, incomeNote = '' }) {
   const id = monthId(Number(year), Number(month));
   if (data.months.some((m) => m.id === id)) throw new Error('Такой месяц уже существует.');
-  const item = validateMonth({ year: Number(year), month: Number(month), income: Number(income) || 0, incomeNote, expenses: [] });
+  const item = validateMonth({
+    year: Number(year),
+    month: Number(month),
+    income: Number(income) || 0,
+    incomeSources,
+    incomeNote,
+    expenses: [],
+  });
   data.months.push(item);
   data.months.sort((a, b) => b.id.localeCompare(a.id));
   return item;
@@ -163,7 +192,16 @@ export function mergeData(current, incoming) {
         signatures.add(sig);
       }
     }
-    if (!existing.income && incomingMonth.income) existing.income = incomingMonth.income;
+    const existingIsLegacyIncome = existing.incomeSources?.length === 1
+      && ['Доход', 'Основной доход'].includes(existing.incomeSources[0].name);
+    const incomingHasDetailedIncome = incomingMonth.incomeSources?.length > 1
+      || (incomingMonth.incomeSources?.length === 1
+        && !['Доход', 'Основной доход'].includes(incomingMonth.incomeSources[0].name));
+    if ((!existing.income && incomingMonth.income)
+      || (existingIsLegacyIncome && incomingHasDetailedIncome && existing.income === incomingMonth.income)) {
+      existing.incomeSources = JSON.parse(JSON.stringify(incomingMonth.incomeSources));
+      existing.income = incomingMonth.income;
+    }
     if (!existing.incomeNote && incomingMonth.incomeNote) existing.incomeNote = incomingMonth.incomeNote;
   }
   result.months.sort((a, b) => b.id.localeCompare(a.id));
