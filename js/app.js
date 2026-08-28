@@ -2,7 +2,7 @@ import { addExpense, createMonth, filterExpenses, mergeData, migrateData, totals
 import { backupData, getGithubSettings, getTheme, loadInitialData, loadSeed, saveData, saveGithubSettings, setTheme } from './storage.js';
 import { exportXlsx, importPreview, parseXlsxFile } from './xlsx.js';
 import { fetchGithubData, pushGithubData } from './github-sync.js';
-import { daysInMonth, downloadText, formatMoney, MONTH_NAMES, normalizeText, parsePositiveNumber, timestampFilePart } from './utils.js';
+import { daysInMonth, downloadText, formatMoney, MONTH_NAMES, normalizeText, timestampFilePart } from './utils.js';
 
 const $ = (s) => document.querySelector(s);
 const $$ = (s) => [...document.querySelectorAll(s)];
@@ -42,6 +42,7 @@ function bindEvents() {
   $('#delete-month-btn').addEventListener('click', deleteSelectedMonth);
   $('#add-expense-btn').addEventListener('click', () => openExpenseDialog());
   $('#expense-form').addEventListener('submit', saveExpenseFromForm);
+  $('#expense-amount').addEventListener('input', updateAmountPreview);
   $('#month-form').addEventListener('submit', saveMonthFromForm);
   $('#reference-form').addEventListener('submit', saveReferenceFromForm);
   $('#search-input').addEventListener('input', (e) => { filters.search = e.target.value; renderExpenses(); });
@@ -360,6 +361,7 @@ function openExpenseDialog(id='') {
   $('#expense-category').value = existing?.category || '';
   $('#expense-description').value = existing?.description || '';
   $('#expense-amount').value = existing?.amount || '';
+  updateAmountPreview();
   const lastType = sessionStorage.getItem('expenses-app:last-type');
   $('#expense-type').value = existing?.type || (data.types.includes(lastType) ? lastType : data.types[0] || '');
   $('#expense-dialog').showModal();
@@ -369,19 +371,108 @@ function openExpenseDialog(id='') {
 function saveExpenseFromForm(e) {
   e.preventDefault();
   const month = getMonth();
-  const payload = {
-    day: Number($('#expense-day').value),
-    category: normalizeText($('#expense-category').value),
-    description: normalizeText($('#expense-description').value),
-    amount: parsePositiveNumber($('#expense-amount').value),
-    type: normalizeText($('#expense-type').value),
-  };
   try {
+    const payload = {
+      day: Number($('#expense-day').value),
+      category: normalizeText($('#expense-category').value),
+      description: normalizeText($('#expense-description').value),
+      amount: parseAmountExpression($('#expense-amount').value),
+      type: normalizeText($('#expense-type').value),
+    };
     const id = $('#expense-id').value;
     if (id) updateExpense(data, month, id, payload); else addExpense(data, month, payload);
     sessionStorage.setItem('expenses-app:last-type', payload.type);
     persist(); $('#expense-dialog').close(); renderAll(); toast(id ? 'Расход изменен' : 'Расход добавлен');
   } catch (error) { toast(error.message); }
+}
+
+function updateAmountPreview() {
+  const raw = $('#expense-amount').value.trim();
+  const preview = $('#expense-amount-result');
+  if (!raw) {
+    preview.textContent = 'Можно считать: 2500+450, 1200*3';
+    return;
+  }
+  try {
+    const amount = parseAmountExpression(raw);
+    preview.textContent = `= ${formatMoney(amount, data.settings)}`;
+  } catch {
+    preview.textContent = 'Продолжите выражение…';
+  }
+}
+
+function parseAmountExpression(rawValue) {
+  const source = String(rawValue ?? '')
+    .trim()
+    .replace(/\s+/g, '')
+    .replace(/,/g, '.')
+    .replace(/[−–—]/g, '-')
+    .replace(/[×xхХ]/g, '*')
+    .replace(/÷/g, '/');
+
+  if (!source) throw new Error('Укажите сумму.');
+  if (!/^[0-9+\-*/().]+$/.test(source)) {
+    throw new Error('В сумме можно использовать цифры, +, −, ×, ÷ и скобки.');
+  }
+
+  let position = 0;
+
+  function parseExpression() {
+    let value = parseTerm();
+    while (source[position] === '+' || source[position] === '-') {
+      const operator = source[position++];
+      const right = parseTerm();
+      value = operator === '+' ? value + right : value - right;
+    }
+    return value;
+  }
+
+  function parseTerm() {
+    let value = parseUnary();
+    while (source[position] === '*' || source[position] === '/') {
+      const operator = source[position++];
+      const right = parseUnary();
+      if (operator === '/' && right === 0) throw new Error('Деление на ноль невозможно.');
+      value = operator === '*' ? value * right : value / right;
+    }
+    return value;
+  }
+
+  function parseUnary() {
+    if (source[position] === '+') {
+      position += 1;
+      return parseUnary();
+    }
+    if (source[position] === '-') {
+      position += 1;
+      return -parseUnary();
+    }
+    return parsePrimary();
+  }
+
+  function parsePrimary() {
+    if (source[position] === '(') {
+      position += 1;
+      const value = parseExpression();
+      if (source[position] !== ')') throw new Error('Проверьте скобки в сумме.');
+      position += 1;
+      return value;
+    }
+
+    const match = source.slice(position).match(/^(?:\d+(?:\.\d*)?|\.\d+)/);
+    if (!match) throw new Error('Проверьте выражение суммы.');
+    position += match[0].length;
+    return Number(match[0]);
+  }
+
+  const result = parseExpression();
+  if (position !== source.length || !Number.isFinite(result)) {
+    throw new Error('Проверьте выражение суммы.');
+  }
+
+  const rounded = Math.round((result + Number.EPSILON) * 100) / 100;
+  if (!(rounded > 0)) throw new Error('Сумма должна быть больше нуля.');
+  return rounded;
 }
 
 function deleteExpense(id) {
