@@ -135,6 +135,7 @@ function renderAll() {
   }
   renderStats();
   renderFilterOptions();
+  syncFilterControls();
   renderExpenseFormOptions();
   renderExpenses();
 }

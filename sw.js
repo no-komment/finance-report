@@ -1,9 +1,18 @@
-const CACHE_NAME = "finance-report-v2";
+const CACHE_NAME = "finance-report-v3";
 
 const APP_SHELL = [
   "./",
   "./index.html",
   "./manifest.webmanifest",
+  "./css/styles.css",
+  "./js/app.js",
+  "./js/storage.js",
+  "./js/expenses.js",
+  "./js/xlsx.js",
+  "./js/github-sync.js",
+  "./js/utils.js",
+  "./data/expenses.json",
+  "./assets/icons/favicon.ico",
   "./assets/icons/icon-192.png",
   "./assets/icons/icon-512.png",
   "./assets/icons/icon-maskable-192.png",
@@ -41,60 +50,39 @@ self.addEventListener("fetch", (event) => {
 
   const url = new URL(request.url);
 
-  // Чужие CDN/API service worker не трогает.
+  // CDN и GitHub API не перехватываем.
   if (url.origin !== self.location.origin) {
     return;
   }
 
-  // expenses.json всегда стараемся получать свежим.
-  if (url.pathname.endsWith("/data/expenses.json")) {
-    event.respondWith(
-      fetch(request)
-        .then((response) => {
-          const copy = response.clone();
-
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(request, copy);
-          });
-
-          return response;
-        })
-        .catch(() => caches.match(request))
-    );
-
-    return;
-  }
-
-  // HTML тоже сначала берем из сети,
-  // чтобы после git push приложение обновлялось.
-  if (request.mode === "navigate") {
-    event.respondWith(
-      fetch(request).catch(() => caches.match("./index.html"))
-    );
-
-    return;
-  }
-
-  // CSS/JS/иконки: cache-first.
-  event.respondWith(
-    caches.match(request).then((cached) => {
-      if (cached) {
-        return cached;
-      }
-
-      return fetch(request).then((response) => {
-        if (!response || response.status !== 200) {
-          return response;
-        }
-
-        const copy = response.clone();
-
-        caches.open(CACHE_NAME).then((cache) => {
-          cache.put(request, copy);
-        });
-
-        return response;
-      });
-    })
-  );
+  // Для файлов самого приложения всегда сначала проверяем сеть.
+  // Так обычное обновление страницы получает свежие JS/CSS/HTML после deploy.
+  // Кэш используется только при отсутствии сети.
+  event.respondWith(networkFirst(request));
 });
+
+async function networkFirst(request) {
+  try {
+    const response = await fetch(request, { cache: "no-store" });
+
+    if (response && response.ok) {
+      const cache = await caches.open(CACHE_NAME);
+      await cache.put(request, response.clone());
+    }
+
+    return response;
+  } catch (error) {
+    const cached = await caches.match(request);
+
+    if (cached) {
+      return cached;
+    }
+
+    if (request.mode === "navigate") {
+      const fallback = await caches.match("./index.html");
+      if (fallback) return fallback;
+    }
+
+    throw error;
+  }
+}
