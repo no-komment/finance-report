@@ -1,4 +1,4 @@
-const CACHE_NAME = "finance-report-v3";
+const CACHE_NAME = "finance-report-v4-d1";
 
 const APP_SHELL = [
   "./",
@@ -11,7 +11,6 @@ const APP_SHELL = [
   "./js/xlsx.js",
   "./js/github-sync.js",
   "./js/utils.js",
-  "./data/expenses.json",
   "./assets/icons/favicon.ico",
   "./assets/icons/icon-192.png",
   "./assets/icons/icon-512.png",
@@ -23,7 +22,6 @@ self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL))
   );
-
   self.skipWaiting();
 });
 
@@ -37,52 +35,39 @@ self.addEventListener("activate", (event) => {
       )
     )
   );
-
   self.clients.claim();
 });
 
 self.addEventListener("fetch", (event) => {
   const request = event.request;
-
-  if (request.method !== "GET") {
-    return;
-  }
+  if (request.method !== "GET") return;
 
   const url = new URL(request.url);
+  if (url.origin !== self.location.origin) return;
 
-  // CDN и GitHub API не перехватываем.
-  if (url.origin !== self.location.origin) {
-    return;
-  }
+  // API с финансовыми данными никогда не кладем в Cache Storage.
+  if (url.pathname.startsWith("/api/")) return;
 
-  // Для файлов самого приложения всегда сначала проверяем сеть.
-  // Так обычное обновление страницы получает свежие JS/CSS/HTML после deploy.
-  // Кэш используется только при отсутствии сети.
+  // Для файлов приложения используем network-first, чтобы новый deploy обновлялся сразу.
   event.respondWith(networkFirst(request));
 });
 
 async function networkFirst(request) {
   try {
     const response = await fetch(request, { cache: "no-store" });
-
     if (response && response.ok) {
       const cache = await caches.open(CACHE_NAME);
       await cache.put(request, response.clone());
     }
-
     return response;
   } catch (error) {
     const cached = await caches.match(request);
-
-    if (cached) {
-      return cached;
-    }
+    if (cached) return cached;
 
     if (request.mode === "navigate") {
       const fallback = await caches.match("./index.html");
       if (fallback) return fallback;
     }
-
     throw error;
   }
 }
