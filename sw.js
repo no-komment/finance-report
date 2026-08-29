@@ -1,4 +1,4 @@
-const CACHE_NAME = "finance-report-v13-income-analytics";
+const CACHE_NAME = "finance-report-v14-about-refresh";
 
 const APP_SHELL = [
   "/",
@@ -12,6 +12,7 @@ const APP_SHELL = [
   "/js/github-sync.js",
   "/js/app-lock.js",
   "/js/analytics.js",
+  "/js/about.js",
   "/js/utils.js",
   "/assets/icons/favicon.ico",
   "/assets/icons/icon-192.png",

@@ -1,5 +1,6 @@
 import './app-lock.js';
 import './analytics.js';
+import './about.js';
 
 const API_URL = '/api/data';
 const VERSION_KEY = 'expenses-app:d1-version:v1';
