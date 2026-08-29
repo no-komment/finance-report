@@ -1,4 +1,4 @@
-const CACHE_NAME = "finance-report-v4-d1";
+const CACHE_NAME = "finance-report-v5-d1-autosync";
 
 const APP_SHELL = [
   "./",
