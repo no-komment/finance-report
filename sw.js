@@ -1,4 +1,4 @@
-const CACHE_NAME = "finance-report-v7-cloudflare-root";
+const CACHE_NAME = "finance-report-v8-biometric-grace";
 
 const APP_SHELL = [
   "/",

@@ -1,7 +1,9 @@
 const CREDENTIAL_KEY = 'expenses-app:device-lock-credential:v1';
 const USER_KEY = 'expenses-app:device-lock-user:v1';
 const HIDDEN_AT_KEY = 'expenses-app:device-lock-hidden-at:v1';
-const LOCK_AFTER_HIDDEN_MS = 700;
+// Короткое переключение в другое приложение не требует повторной биометрии.
+// После 2 минут в фоне приложение снова потребует Face ID / Windows Hello.
+const LOCK_AFTER_HIDDEN_MS = 2 * 60 * 1000;
 
 let overlay;
 let title;
@@ -279,16 +281,13 @@ function hasUserVerification(authenticatorData) {
 function handleVisibilityChange() {
   if (!supported || !credentialId) return;
   if (document.hidden) {
+    // Сразу закрываем содержимое, чтобы финансовые данные не попадали
+    // в снимок приложения в переключателе iOS/Windows.
     rememberHidden();
-    if (!busy) lockNow();
     return;
   }
-  const hiddenAt = Number(sessionStorage.getItem(HIDDEN_AT_KEY) || 0);
-  if (hiddenAt && Date.now() - hiddenAt >= LOCK_AFTER_HIDDEN_MS) {
-    showUnlock();
-    unlockWithBiometrics({ silentFailure: true });
-  }
-  sessionStorage.removeItem(HIDDEN_AT_KEY);
+
+  restoreAfterBackground();
 }
 
 function rememberHidden() {
@@ -297,12 +296,25 @@ function rememberHidden() {
   if (!busy) lockNow();
 }
 
-function handlePageShow(event) {
-  if (!supported || !credentialId) return;
-  if (event.persisted) {
+function restoreAfterBackground() {
+  const hiddenAt = Number(sessionStorage.getItem(HIDDEN_AT_KEY) || 0);
+  if (!hiddenAt) return;
+
+  const hiddenFor = Date.now() - hiddenAt;
+  if (hiddenFor >= LOCK_AFTER_HIDDEN_MS) {
     showUnlock();
     unlockWithBiometrics({ silentFailure: true });
+    return;
   }
+
+  // Вернулись быстро (например, посмотрели операцию в банковском приложении):
+  // снимаем защитный экран без повторного Face ID / Windows Hello.
+  releaseLock();
+}
+
+function handlePageShow(event) {
+  if (!supported || !credentialId || !event.persisted) return;
+  restoreAfterBackground();
 }
 
 function lockNow() {
