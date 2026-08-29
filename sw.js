@@ -1,4 +1,4 @@
-const CACHE_NAME = "finance-report-v15-about-readable";
+const CACHE_NAME = "finance-report-v16-runtime-readability";
 
 const APP_SHELL = [
   "/",
@@ -10,6 +10,7 @@ const APP_SHELL = [
   "/js/expenses.js",
   "/js/xlsx.js",
   "/js/github-sync.js",
+  "/js/branding.js",
   "/js/app-lock.js",
   "/js/analytics.js",
   "/js/about.js",

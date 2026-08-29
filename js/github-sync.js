@@ -1,3 +1,4 @@
+import './branding.js';
 import './app-lock.js';
 import './analytics.js';
 import './about.js';

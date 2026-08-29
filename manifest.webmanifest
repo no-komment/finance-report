@@ -1,7 +1,7 @@
 {
-  "name": "Расходы",
-  "short_name": "Расходы",
-  "description": "Личный учет расходов",
+  "name": "Runtime",
+  "short_name": "Runtime",
+  "description": "Локальное рабочее пространство",
   "id": "/",
   "start_url": "/",
   "scope": "/",
