@@ -2,11 +2,9 @@
   "name": "Расходы",
   "short_name": "Расходы",
   "description": "Личный учет расходов",
-
-  "id": "/finance-report/",
-  "start_url": "/finance-report/",
-  "scope": "/finance-report/",
-
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "orientation": "portrait-primary",
   "background_color": "#1d1f1b",
@@ -14,25 +12,25 @@
   "lang": "ru-RU",
   "icons": [
     {
-      "src": "./assets/icons/icon-192.png",
+      "src": "/assets/icons/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "./assets/icons/icon-512.png",
+      "src": "/assets/icons/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "./assets/icons/icon-maskable-192.png",
+      "src": "/assets/icons/icon-maskable-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "maskable"
     },
     {
-      "src": "./assets/icons/icon-maskable-512.png",
+      "src": "/assets/icons/icon-maskable-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"

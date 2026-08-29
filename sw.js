@@ -1,22 +1,22 @@
-const CACHE_NAME = "finance-report-v6-biometric-lock";
+const CACHE_NAME = "finance-report-v7-cloudflare-root";
 
 const APP_SHELL = [
-  "./",
-  "./index.html",
-  "./manifest.webmanifest",
-  "./css/styles.css",
-  "./js/app.js",
-  "./js/storage.js",
-  "./js/expenses.js",
-  "./js/xlsx.js",
-  "./js/github-sync.js",
-  "./js/app-lock.js",
-  "./js/utils.js",
-  "./assets/icons/favicon.ico",
-  "./assets/icons/icon-192.png",
-  "./assets/icons/icon-512.png",
-  "./assets/icons/icon-maskable-192.png",
-  "./assets/icons/icon-maskable-512.png"
+  "/",
+  "/index.html",
+  "/manifest.webmanifest",
+  "/css/styles.css",
+  "/js/app.js",
+  "/js/storage.js",
+  "/js/expenses.js",
+  "/js/xlsx.js",
+  "/js/github-sync.js",
+  "/js/app-lock.js",
+  "/js/utils.js",
+  "/assets/icons/favicon.ico",
+  "/assets/icons/icon-192.png",
+  "/assets/icons/icon-512.png",
+  "/assets/icons/icon-maskable-192.png",
+  "/assets/icons/icon-maskable-512.png"
 ];
 
 self.addEventListener("install", (event) => {
@@ -49,7 +49,6 @@ self.addEventListener("fetch", (event) => {
   // API с финансовыми данными никогда не кладем в Cache Storage.
   if (url.pathname.startsWith("/api/")) return;
 
-  // Для файлов приложения используем network-first, чтобы новый deploy обновлялся сразу.
   event.respondWith(networkFirst(request));
 });
 
@@ -66,9 +65,10 @@ async function networkFirst(request) {
     if (cached) return cached;
 
     if (request.mode === "navigate") {
-      const fallback = await caches.match("./index.html");
+      const fallback = await caches.match("/index.html");
       if (fallback) return fallback;
     }
+
     throw error;
   }
 }
