@@ -1,4 +1,5 @@
 import './app-lock.js';
+import './analytics.js';
 
 const API_URL = '/api/data';
 const VERSION_KEY = 'expenses-app:d1-version:v1';
@@ -8,7 +9,6 @@ const REMOTE_APPLY_KEY = 'expenses-app:d1-remote-apply:v1';
 
 setupCloudflareUi();
 setupAutoSyncStatus();
-
 export async function fetchGithubData(_settings, _token) {
   const response = await fetch(API_URL, {
     method: 'GET',
@@ -23,12 +23,10 @@ export async function fetchGithubData(_settings, _token) {
   }
 
   if (!response.ok) throw new Error(await apiError(response));
-
   const payload = await response.json();
   if (!payload || !payload.data || typeof payload.data !== 'object') {
     throw new Error('Cloudflare D1 вернул некорректные данные.');
   }
-
   rememberVersion(payload.version);
   const remoteSerialized = JSON.stringify(payload.data);
   localStorage.setItem(LAST_SYNCED_KEY, remoteSerialized);
@@ -38,7 +36,6 @@ export async function fetchGithubData(_settings, _token) {
   sessionStorage.setItem(REMOTE_APPLY_KEY, remoteSerialized);
   return { sha: payload.version || null, data: payload.data };
 }
-
 export async function pushGithubData(_settings, _token, data, expectedSha) {
   const storedVersion = localStorage.getItem(VERSION_KEY) || null;
   const dirty = localStorage.getItem(DIRTY_KEY) === '1';
@@ -58,7 +55,6 @@ export async function pushGithubData(_settings, _token, data, expectedSha) {
     credentials: 'same-origin',
     body: JSON.stringify({ data, expectedVersion }),
   });
-
   if (response.status === 409) {
     const payload = await safeJson(response);
     const error = new Error('Данные в Cloudflare D1 изменились после последней загрузки. Загрузите свежую версию или выполните объединение.');
@@ -71,7 +67,6 @@ export async function pushGithubData(_settings, _token, data, expectedSha) {
   }
 
   if (!response.ok) throw new Error(await apiError(response));
-
   const payload = await response.json();
   rememberVersion(payload.version);
   localStorage.setItem(LAST_SYNCED_KEY, JSON.stringify(data));
@@ -83,7 +78,6 @@ function rememberVersion(version) {
   if (version) localStorage.setItem(VERSION_KEY, version);
   else localStorage.removeItem(VERSION_KEY);
 }
-
 async function apiError(response) {
   const body = await safeJson(response);
   if (response.status === 503 && body?.code === 'D1_API_DISABLED') {
@@ -94,7 +88,6 @@ async function apiError(response) {
   }
   return body?.message || body?.error || `Cloudflare D1 API: ${response.status} ${response.statusText}`;
 }
-
 async function safeJson(response) {
   try { return await response.json(); } catch { return null; }
 }
@@ -103,7 +96,6 @@ function setupCloudflareUi() {
   // Удаляем старые GitHub PAT из браузера: синхронизация больше не использует GitHub API.
   localStorage.removeItem('expenses-app:gh-token:persistent');
   sessionStorage.removeItem('expenses-app:gh-token');
-
   const apply = () => {
     const dialog = document.getElementById('github-dialog');
     if (dialog) {
@@ -118,12 +110,10 @@ function setupCloudflareUi() {
       if (legacyForm) legacyForm.hidden = true;
       if (conflictTitle) conflictTitle.textContent = 'Версия в Cloudflare D1 изменилась.';
     }
-
     const loadButton = document.getElementById('gh-load');
     const pushButton = document.getElementById('gh-push');
     if (loadButton) loadButton.textContent = 'Загрузить из D1';
     if (pushButton) pushButton.textContent = 'Сохранить сейчас';
-
     for (const button of document.querySelectorAll('[data-action="github"]')) {
       const strong = button.querySelector('strong');
       const small = button.querySelector('small');
@@ -132,7 +122,6 @@ function setupCloudflareUi() {
       if (small) small.textContent = 'Автосинхронизация включена';
       if (!strong && span) span.textContent = 'Синхронизация';
     }
-
     // Seed JSON больше не публикуется. Локальную очистку оставляем через импорт/экспорт JSON,
     // поэтому старую кнопку сброса к публичному seed скрываем.
     for (const button of document.querySelectorAll('[data-action="reset-seed"]')) button.hidden = true;
@@ -143,7 +132,6 @@ function setupCloudflareUi() {
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', apply, { once: true });
   else apply();
 }
-
 function setupAutoSyncStatus() {
   if (typeof window === 'undefined' || window.__financeD1SyncStatusInstalled) return;
   window.__financeD1SyncStatusInstalled = true;
@@ -152,7 +140,6 @@ function setupAutoSyncStatus() {
     const detail = event.detail || {};
     const status = document.getElementById('gh-status');
     if (status && detail.message) status.textContent = detail.message;
-
     for (const button of document.querySelectorAll('[data-action="github"]')) {
       const small = button.querySelector('small');
       if (!small) continue;
@@ -164,18 +151,15 @@ function setupAutoSyncStatus() {
     }
   });
 }
-
 function installLegacyTextObserver() {
   if (window.__financeD1TextObserverInstalled) return;
   window.__financeD1TextObserverInstalled = true;
-
   const replacements = new Map([
     ['Изменения сохранены в GitHub.', 'Изменения сохранены в Cloudflare D1.'],
     ['GitHub Sync завершен', 'Cloudflare D1 синхронизирован'],
     ['Данные загружены из GitHub', 'Данные загружены из Cloudflare D1'],
     ['Изменения объединены локально. Нажмите «Сохранить в GitHub» еще раз.', 'Изменения объединены локально. Нажмите «Сохранить сейчас» еще раз.'],
   ]);
-
   const normalize = (element) => {
     if (!element) return;
     const replacement = replacements.get(element.textContent);
@@ -186,7 +170,6 @@ function installLegacyTextObserver() {
   const toast = document.getElementById('toast');
   normalize(status);
   normalize(toast);
-
   const observer = new MutationObserver(() => {
     normalize(status);
     normalize(toast);

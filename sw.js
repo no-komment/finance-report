@@ -1,4 +1,4 @@
-const CACHE_NAME = "finance-report-v10-decoy-privacy";
+const CACHE_NAME = "finance-report-v11-analytics";
 
 const APP_SHELL = [
   "/",
@@ -11,6 +11,7 @@ const APP_SHELL = [
   "/js/xlsx.js",
   "/js/github-sync.js",
   "/js/app-lock.js",
+  "/js/analytics.js",
   "/js/utils.js",
   "/assets/icons/favicon.ico",
   "/assets/icons/icon-192.png",
