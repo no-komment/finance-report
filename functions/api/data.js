@@ -94,16 +94,19 @@ export function onRequestOptions() {
 }
 
 function apiGuard(context) {
+  if (context.data?.authenticated !== true) {
+    return json({ code: 'UNAUTHORIZED', message: 'Требуется вход.' }, 401);
+  }
+
   if (!context.env.DB) {
     return json({ code: 'D1_NOT_BOUND', message: 'Binding DB не настроен в Cloudflare Pages.' }, 500);
   }
 
-  // Защита от случайной публикации финансовых данных до настройки Cloudflare Access.
-  // Включить переменную D1_API_ENABLED=1 нужно только после того, как сайт закрыт Access-политикой.
+  // Дополнительный предохранитель: API включаем только после настройки парольной защиты.
   if (context.env.D1_API_ENABLED !== '1') {
     return json({
       code: 'D1_API_DISABLED',
-      message: 'D1 API выключен до завершения настройки Cloudflare Access.',
+      message: 'D1 API выключен до завершения настройки защиты приложения.',
     }, 503);
   }
 
