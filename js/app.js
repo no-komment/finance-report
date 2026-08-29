@@ -699,28 +699,46 @@ function addCapitalSourceRow(source = {}, focus = true) {
   row.dataset.sourceId = source.id || '';
 
   const ownerLabel = document.createElement('label');
-  const ownerCaption = document.createElement('span'); ownerCaption.textContent = 'Владелец';
   const ownerInput = document.createElement('input');
-  ownerInput.type = 'text'; ownerInput.className = 'capital-source-owner'; ownerInput.placeholder = 'Например, Максим'; ownerInput.autocomplete = 'off'; ownerInput.value = source.owner || '';
-  ownerLabel.append(ownerCaption, ownerInput);
+  ownerInput.type = 'text'; ownerInput.className = 'capital-source-owner'; ownerInput.placeholder = 'Например, Максим'; ownerInput.autocomplete = 'off'; ownerInput.value = source.owner || ''; ownerInput.setAttribute('aria-label', 'Владелец');
+  ownerLabel.append(ownerInput);
 
   const nameLabel = document.createElement('label');
-  const nameCaption = document.createElement('span'); nameCaption.textContent = 'Где хранится';
   const nameInput = document.createElement('input');
-  nameInput.type = 'text'; nameInput.className = 'capital-source-name'; nameInput.placeholder = 'Альфа Банк'; nameInput.autocomplete = 'off'; nameInput.value = source.name || '';
-  nameLabel.append(nameCaption, nameInput);
+  nameInput.type = 'text'; nameInput.className = 'capital-source-name'; nameInput.placeholder = 'Альфа Банк'; nameInput.autocomplete = 'off'; nameInput.value = source.name || ''; nameInput.setAttribute('aria-label', 'Где хранится');
+  nameLabel.append(nameInput);
 
   const amountLabel = document.createElement('label');
-  const amountCaption = document.createElement('span'); amountCaption.textContent = 'Сумма';
   const amountInput = document.createElement('input');
-  amountInput.type = 'text'; amountInput.inputMode = 'decimal'; amountInput.className = 'capital-source-amount'; amountInput.placeholder = '10 000'; amountInput.autocomplete = 'off'; amountInput.value = source.amount ? String(source.amount) : '';
-  amountLabel.append(amountCaption, amountInput);
+  amountInput.type = 'text'; amountInput.inputMode = 'decimal'; amountInput.className = 'capital-source-amount'; amountInput.placeholder = '10 000'; amountInput.autocomplete = 'off'; amountInput.value = source.amount ? String(source.amount) : ''; amountInput.setAttribute('aria-label', 'Сумма');
+  amountLabel.append(amountInput);
 
   const currencyLabel = document.createElement('label');
-  const currencyCaption = document.createElement('span'); currencyCaption.textContent = 'Валюта';
-  const currencyInput = document.createElement('input');
-  currencyInput.type = 'text'; currencyInput.className = 'capital-source-currency'; currencyInput.setAttribute('list', 'capital-currency-list'); currencyInput.maxLength = 8; currencyInput.autocomplete = 'off'; currencyInput.value = source.currency || '₽';
-  currencyLabel.append(currencyCaption, currencyInput);
+  const currencyInput = document.createElement('select');
+  currencyInput.className = 'capital-source-currency';
+  currencyInput.setAttribute('aria-label', 'Валюта');
+  const currencyOptions = [
+    ['₽', '₽  RUB'],
+    ['$', '$  USD'],
+    ['€', '€  EUR'],
+    ['£', '£  GBP'],
+    ['₾', '₾  GEL'],
+    ['₺', '₺  TRY'],
+    ['¥', '¥  CNY'],
+    ['₸', '₸  KZT'],
+  ];
+  const currentCurrency = source.currency || '₽';
+  if (!currencyOptions.some(([value]) => value === currentCurrency)) {
+    currencyOptions.unshift([currentCurrency, currentCurrency]);
+  }
+  for (const [value, text] of currencyOptions) {
+    const option = document.createElement('option');
+    option.value = value;
+    option.textContent = text;
+    option.selected = value === currentCurrency;
+    currencyInput.append(option);
+  }
+  currencyLabel.append(currencyInput);
 
   const remove = document.createElement('button');
   remove.type = 'button'; remove.className = 'capital-source-remove'; remove.dataset.capitalRemove = ''; remove.setAttribute('aria-label', 'Удалить источник капитала'); remove.title = 'Удалить'; remove.textContent = '×';
