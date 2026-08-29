@@ -1,4 +1,4 @@
-const CACHE_NAME = "finance-report-v9-safari-select-fix";
+const CACHE_NAME = "finance-report-v10-decoy-privacy";
 
 const APP_SHELL = [
   "/",

@@ -5,6 +5,309 @@ const HIDDEN_AT_KEY = 'expenses-app:device-lock-hidden-at:v1';
 // После 2 минут в фоне приложение снова потребует Face ID / Windows Hello.
 const LOCK_AFTER_HIDDEN_MS = 2 * 60 * 1000;
 
+// Экран-приманка: при каждом запуске реальные финансовые данные скрыты.
+// В качестве шаблона используется июль 2026 из исходного отчёта.
+const DECOY_INCOME = 150000;
+const DECOY_INCOME_NOTE = 'инв - только купоны и доход по вкладам, зп - работа + доп работа';
+const DECOY_EXPENSES = [
+  {
+    "day": 1,
+    "category": "ЖКХ",
+    "description": "За квартиру",
+    "amount": 25000.0,
+    "type": "Семейный"
+  },
+  {
+    "day": 1,
+    "category": "Еда",
+    "description": "На альфу Насте",
+    "amount": 6000.0,
+    "type": "Семейный"
+  },
+  {
+    "day": 1,
+    "category": "Еда",
+    "description": "Дом",
+    "amount": 260.0,
+    "type": "Семейный"
+  },
+  {
+    "day": 2,
+    "category": "Еда",
+    "description": "На альфу Насте",
+    "amount": 1000.0,
+    "type": "Семейный"
+  },
+  {
+    "day": 2,
+    "category": "Здоровье",
+    "description": "Зал",
+    "amount": 1600.0,
+    "type": "Семейный"
+  },
+  {
+    "day": 2,
+    "category": "Бытовуха",
+    "description": "Озон",
+    "amount": 167.0,
+    "type": "Семейный"
+  },
+  {
+    "day": 3,
+    "category": "Еда",
+    "description": "На альфу Насте",
+    "amount": 5000.0,
+    "type": "Семейный"
+  },
+  {
+    "day": 3,
+    "category": "Подписки",
+    "description": "Ростелеком",
+    "amount": 1060.0,
+    "type": "Семейный"
+  },
+  {
+    "day": 3,
+    "category": "Подписки",
+    "description": "Т Про",
+    "amount": 299.0,
+    "type": "Личный"
+  },
+  {
+    "day": 4,
+    "category": "Одежда",
+    "description": "Кросы и штаны",
+    "amount": 1200.0,
+    "type": "Личный"
+  },
+  {
+    "day": 4,
+    "category": "Одежда",
+    "description": "Джинсы Насте",
+    "amount": 1500.0,
+    "type": "Жена"
+  },
+  {
+    "day": 4,
+    "category": "Здоровье",
+    "description": "Анализы",
+    "amount": 2500.0,
+    "type": "Личный"
+  },
+  {
+    "day": 4,
+    "category": "Такси",
+    "description": "ПО Ижу",
+    "amount": 180.0,
+    "type": "Семейный"
+  },
+  {
+    "day": 4,
+    "category": "Еда",
+    "description": "Дядя Арчи",
+    "amount": 696.0,
+    "type": "Семейный"
+  },
+  {
+    "day": 5,
+    "category": "Здоровье",
+    "description": "Зубы Насте",
+    "amount": 6500.0,
+    "type": "Жена"
+  },
+  {
+    "day": 5,
+    "category": "Подписки",
+    "description": "Чат гпт",
+    "amount": 1800.0,
+    "type": "Семейный"
+  },
+  {
+    "day": 8,
+    "category": "Здоровье",
+    "description": "Зал",
+    "amount": 15000.0,
+    "type": "Жена"
+  },
+  {
+    "day": 10,
+    "category": "Еда",
+    "description": "На альфу Насте",
+    "amount": 2000.0,
+    "type": "Семейный"
+  },
+  {
+    "day": 13,
+    "category": "Учеба",
+    "description": "Техновек",
+    "amount": 10000.0,
+    "type": "Личный"
+  },
+  {
+    "day": 14,
+    "category": "Прочее",
+    "description": "Насте",
+    "amount": 1300.0,
+    "type": "Жена"
+  },
+  {
+    "day": 14,
+    "category": "Еда",
+    "description": "На альфу Насте",
+    "amount": 2000.0,
+    "type": "Семейный"
+  },
+  {
+    "day": 16,
+    "category": "Еда",
+    "description": "На альфу Насте",
+    "amount": 2000.0,
+    "type": "Семейный"
+  },
+  {
+    "day": 17,
+    "category": "Подписки",
+    "description": "Yota",
+    "amount": 762.0,
+    "type": "Личный"
+  },
+  {
+    "day": 18,
+    "category": "Такси",
+    "description": "Втк",
+    "amount": 400.0,
+    "type": "Семейный"
+  },
+  {
+    "day": 18,
+    "category": "Такси",
+    "description": "Иж",
+    "amount": 400.0,
+    "type": "Семейный"
+  },
+  {
+    "day": 18,
+    "category": "Прочее",
+    "description": "Профи",
+    "amount": 120.0,
+    "type": "Семейный"
+  },
+  {
+    "day": 19,
+    "category": "Еда",
+    "description": "Завтрак",
+    "amount": 536.0,
+    "type": "Семейный"
+  },
+  {
+    "day": 19,
+    "category": "Одежда",
+    "description": "Носки",
+    "amount": 263.0,
+    "type": "Личный"
+  },
+  {
+    "day": 22,
+    "category": "Еда",
+    "description": "На альфу Насте",
+    "amount": 2000.0,
+    "type": "Семейный"
+  },
+  {
+    "day": 23,
+    "category": "Еда",
+    "description": "Вода",
+    "amount": 66.0,
+    "type": "Семейный"
+  },
+  {
+    "day": 25,
+    "category": "Такси",
+    "description": "Втк",
+    "amount": 536.0,
+    "type": "Семейный"
+  },
+  {
+    "day": 25,
+    "category": "Такси",
+    "description": "Шаркан",
+    "amount": 499.0,
+    "type": "Семейный"
+  },
+  {
+    "day": 25,
+    "category": "Еда",
+    "description": "Дом",
+    "amount": 2063.0,
+    "type": "Семейный"
+  },
+  {
+    "day": 26,
+    "category": "Такси",
+    "description": "Иж",
+    "amount": 500.0,
+    "type": "Семейный"
+  },
+  {
+    "day": 27,
+    "category": "Одежда",
+    "description": "Кепка",
+    "amount": 227.0,
+    "type": "Личный"
+  },
+  {
+    "day": 27,
+    "category": "Здоровье",
+    "description": "Зал",
+    "amount": 2000.0,
+    "type": "Личный"
+  },
+  {
+    "day": 28,
+    "category": "Еда",
+    "description": "Вода",
+    "amount": 99.0,
+    "type": "Семейный"
+  },
+  {
+    "day": 29,
+    "category": "Еда",
+    "description": "Дом",
+    "amount": 150.0,
+    "type": "Семейный"
+  },
+  {
+    "day": 29,
+    "category": "Еда",
+    "description": "Суши",
+    "amount": 1000.0,
+    "type": "Семейный"
+  },
+  {
+    "day": 30,
+    "category": "Еда",
+    "description": "На альфу Насте",
+    "amount": 1000.0,
+    "type": "Семейный"
+  },
+  {
+    "day": 30,
+    "category": "Развлечение",
+    "description": "Кофе",
+    "amount": 195.0,
+    "type": "Семейный"
+  },
+  {
+    "day": 31,
+    "category": "Еда",
+    "description": "Дом",
+    "amount": 318.0,
+    "type": "Семейный"
+  }
+];
+const DECOY_MONTH_ABBRS = ['янв', 'фев', 'мар', 'апр', 'май', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'];
+
+
 let overlay;
 let title;
 let hint;
@@ -15,6 +318,16 @@ let unlocked = false;
 let supported = false;
 let credentialId = localStorage.getItem(CREDENTIAL_KEY) || '';
 
+let decoyActive = true;
+let decoyWorkspace = null;
+let realWorkspace = null;
+let decoyToggle = null;
+let headerSubtitle = null;
+let realHeaderSubtitle = '';
+let subtitleObserver = null;
+let titleObserver = null;
+let decoyWriteGuard = false;
+
 start().catch((error) => {
   console.error('Biometric lock setup failed', error);
   releaseLock();
@@ -23,6 +336,7 @@ start().catch((error) => {
 async function start() {
   installStyles();
   createOverlay();
+  setupPrivacyDecoy();
   lockNow();
 
   supported = await biometricAvailable();
@@ -305,6 +619,10 @@ function handleVisibilityChange() {
 }
 
 function rememberHidden() {
+  // Всегда возвращаем шаблонные данные до того, как iOS/Windows успеет
+  // сделать превью приложения для переключателя окон.
+  activateDecoy({ closeTransient: true });
+
   if (!supported || !credentialId) return;
   sessionStorage.setItem(HIDDEN_AT_KEY, String(Date.now()));
   if (!busy) lockNow();
@@ -389,6 +707,422 @@ function base64UrlToBytes(value) {
   const padded = normalized + '='.repeat((4 - normalized.length % 4) % 4);
   const binary = atob(padded);
   return Uint8Array.from(binary, (char) => char.charCodeAt(0));
+}
+
+
+function setupPrivacyDecoy() {
+  realWorkspace = document.querySelector('.workspace');
+  const headerActions = document.querySelector('.header-actions');
+  headerSubtitle = document.getElementById('month-subtitle');
+
+  if (!realWorkspace || !headerActions || !headerSubtitle) {
+    // На случай необычно раннего выполнения модуля.
+    setTimeout(setupPrivacyDecoy, 0);
+    return;
+  }
+
+  if (!document.getElementById('finance-decoy-style')) installDecoyStyles();
+
+  decoyToggle = document.getElementById('finance-decoy-toggle');
+  if (!decoyToggle) {
+    decoyToggle = document.createElement('button');
+    decoyToggle.id = 'finance-decoy-toggle';
+    decoyToggle.className = 'icon-button finance-decoy-toggle';
+    decoyToggle.type = 'button';
+    decoyToggle.addEventListener('click', toggleDecoy);
+    headerActions.prepend(decoyToggle);
+  }
+
+  decoyWorkspace = document.getElementById('finance-decoy-workspace');
+  if (!decoyWorkspace) {
+    decoyWorkspace = document.createElement('main');
+    decoyWorkspace.id = 'finance-decoy-workspace';
+    decoyWorkspace.className = 'workspace finance-decoy-workspace';
+    decoyWorkspace.setAttribute('aria-label', 'Расходы');
+    realWorkspace.insertAdjacentElement('afterend', decoyWorkspace);
+  }
+
+  document.addEventListener('click', guardDecoyInteractions, true);
+  document.addEventListener('submit', guardDecoyInteractions, true);
+  document.addEventListener('change', handleDecoyMonthChange, true);
+
+  subtitleObserver = new MutationObserver(() => {
+    if (!decoyActive || decoyWriteGuard) return;
+    const current = headerSubtitle.textContent || '';
+    const fake = decoySubtitle();
+    if (current !== fake) realHeaderSubtitle = current;
+    writeDecoySubtitle();
+  });
+  subtitleObserver.observe(headerSubtitle, { subtree: true, childList: true, characterData: true });
+
+  const monthTitle = document.getElementById('month-title');
+  if (monthTitle) {
+    titleObserver = new MutationObserver(() => {
+      if (decoyActive) renderDecoyWorkspace();
+    });
+    titleObserver.observe(monthTitle, { subtree: true, childList: true, characterData: true });
+  }
+
+  activateDecoy({ closeTransient: false });
+}
+
+function installDecoyStyles() {
+  const style = document.createElement('style');
+  style.id = 'finance-decoy-style';
+  style.textContent = `
+    .finance-decoy-workspace[hidden] { display: none !important; }
+
+    #finance-decoy-toggle {
+      position: relative;
+      flex: 0 0 auto;
+    }
+    #finance-decoy-toggle.is-real-visible {
+      color: var(--text-primary);
+      background: var(--accent-soft);
+    }
+    #finance-decoy-toggle svg {
+      width: 20px;
+      height: 20px;
+      stroke: currentColor;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      fill: none;
+    }
+
+    html.finance-decoy-active #add-expense-btn,
+    html.finance-decoy-active #month-more-menu,
+    html.finance-decoy-active #new-month-btn,
+    html.finance-decoy-active .mobile-add-button {
+      display: none !important;
+    }
+
+    html.finance-decoy-active .nav-item[data-action],
+    html.finance-decoy-active .mobile-nav-item[data-action] {
+      opacity: .38;
+    }
+
+    html.finance-decoy-active .toast,
+    html.finance-decoy-active .drop-overlay {
+      display: none !important;
+    }
+
+    .finance-decoy-previous { color: var(--text-secondary); }
+    .finance-decoy-income-note {
+      max-width: 52%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      text-align: right;
+    }
+    .finance-decoy-progress > span {
+      display: block;
+      height: 100%;
+      background: var(--accent);
+      border-radius: inherit;
+    }
+    .finance-decoy-workspace .filters {
+      user-select: none;
+    }
+    .finance-decoy-workspace .filters input,
+    .finance-decoy-workspace .filters select,
+    .finance-decoy-workspace .filter-reset {
+      pointer-events: none;
+    }
+    .finance-decoy-workspace .row-actions {
+      pointer-events: none;
+    }
+
+    @media (max-width: 700px) {
+      .finance-decoy-income-note { max-width: 48%; }
+      #finance-decoy-toggle {
+        width: 42px;
+        height: 42px;
+      }
+    }
+  `;
+  document.head.append(style);
+}
+
+function toggleDecoy(event) {
+  event?.preventDefault();
+  event?.stopPropagation();
+  if (decoyActive) revealRealData();
+  else activateDecoy({ closeTransient: true });
+}
+
+function activateDecoy({ closeTransient = true } = {}) {
+  const wasActive = decoyActive;
+  decoyActive = true;
+
+  if (closeTransient) closeRealDataSurfaces();
+
+  if (!realWorkspace || !decoyWorkspace || !headerSubtitle) return;
+
+  const currentSubtitle = headerSubtitle.textContent || '';
+  if (!wasActive || currentSubtitle !== decoySubtitle()) {
+    realHeaderSubtitle = currentSubtitle || realHeaderSubtitle;
+  }
+  renderDecoyWorkspace();
+  writeDecoySubtitle();
+
+  realWorkspace.hidden = true;
+  decoyWorkspace.hidden = false;
+  document.documentElement.classList.add('finance-decoy-active');
+  updateDecoyToggle();
+}
+
+function revealRealData() {
+  decoyActive = false;
+  if (!realWorkspace || !decoyWorkspace || !headerSubtitle) return;
+
+  decoyWorkspace.hidden = true;
+  realWorkspace.hidden = false;
+  document.documentElement.classList.remove('finance-decoy-active');
+
+  if (realHeaderSubtitle) {
+    decoyWriteGuard = true;
+    headerSubtitle.textContent = realHeaderSubtitle;
+    decoyWriteGuard = false;
+  }
+
+  updateDecoyToggle();
+}
+
+function closeRealDataSurfaces() {
+  document.querySelectorAll('dialog[open]').forEach((dialog) => {
+    try { dialog.close(); } catch {}
+  });
+  document.querySelectorAll('details[open]').forEach((details) => {
+    details.open = false;
+  });
+}
+
+function guardDecoyInteractions(event) {
+  if (!decoyActive) return;
+  const target = event.target instanceof Element ? event.target : null;
+  if (!target) return;
+
+  // Разрешены только глаз, выбор уже существующего месяца и переключение темы.
+  if (target.closest('#finance-decoy-toggle, #month-select, .month-item, #theme-btn')) return;
+
+  const interactive = target.closest('button, a, summary, input, select, textarea, form');
+  if (!interactive) return;
+
+  event.preventDefault();
+  event.stopImmediatePropagation();
+}
+
+function handleDecoyMonthChange(event) {
+  if (!decoyActive) return;
+  const target = event.target instanceof Element ? event.target : null;
+  if (!target?.matches('#month-select')) return;
+  setTimeout(() => {
+    captureRealSubtitleAfterMonthChange();
+    renderDecoyWorkspace();
+  }, 0);
+}
+
+function captureRealSubtitleAfterMonthChange() {
+  if (!decoyActive || !headerSubtitle) return;
+  const current = headerSubtitle.textContent || '';
+  const fake = decoySubtitle();
+  if (current !== fake) realHeaderSubtitle = current;
+  writeDecoySubtitle();
+}
+
+function writeDecoySubtitle() {
+  if (!decoyActive || !headerSubtitle) return;
+  const value = decoySubtitle();
+  if (headerSubtitle.textContent === value) return;
+  decoyWriteGuard = true;
+  headerSubtitle.textContent = value;
+  decoyWriteGuard = false;
+}
+
+function decoySubtitle() {
+  return `${DECOY_EXPENSES.length} операции · доход ${formatDecoyMoney(DECOY_INCOME)}`;
+}
+
+function updateDecoyToggle() {
+  if (!decoyToggle) return;
+
+  if (decoyActive) {
+    decoyToggle.classList.remove('is-real-visible');
+    decoyToggle.setAttribute('aria-label', 'Показать настоящие данные');
+    decoyToggle.title = 'Показать настоящие данные';
+    decoyToggle.innerHTML = `
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M3 3l18 18"></path>
+        <path d="M10.6 10.7a2 2 0 0 0 2.7 2.7"></path>
+        <path d="M9.9 4.3A10.8 10.8 0 0 1 12 4c5.6 0 9 5.3 9 5.3a14 14 0 0 1-2.2 2.8"></path>
+        <path d="M6.2 6.2C4.2 7.6 3 9.3 3 9.3S6.4 14.7 12 14.7c1 0 2-.2 2.8-.5"></path>
+      </svg>`;
+  } else {
+    decoyToggle.classList.add('is-real-visible');
+    decoyToggle.setAttribute('aria-label', 'Скрыть настоящие данные');
+    decoyToggle.title = 'Скрыть настоящие данные';
+    decoyToggle.innerHTML = `
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M3 12s3.4-5.5 9-5.5S21 12 21 12s-3.4 5.5-9 5.5S3 12 3 12Z"></path>
+        <circle cx="12" cy="12" r="2.5"></circle>
+      </svg>`;
+  }
+}
+
+function renderDecoyWorkspace() {
+  if (!decoyWorkspace) return;
+
+  const total = DECOY_EXPENSES.reduce((sum, item) => sum + item.amount, 0);
+  const balance = DECOY_INCOME - total;
+  const spentPercent = DECOY_INCOME > 0 ? Math.min(100, (total / DECOY_INCOME) * 100) : 0;
+  const byType = groupDecoy(DECOY_EXPENSES, 'type');
+  const byCategory = groupDecoy(DECOY_EXPENSES, 'category');
+  const monthAbbr = currentDecoyMonthAbbr();
+
+  decoyWorkspace.innerHTML = `
+    <section class="financial-overview" aria-label="Финансовая сводка">
+      <div class="balance-block">
+        <span class="summary-label">Остаток</span>
+        <strong class="balance-value">${escapeDecoy(formatDecoyMoney(balance))}</strong>
+        <div class="balance-context">
+          <span>из <strong>${escapeDecoy(formatDecoyMoney(DECOY_INCOME))}</strong> дохода</span>
+          <span class="context-dot" aria-hidden="true"></span>
+          <span class="finance-decoy-previous">как в прошлом месяце</span>
+        </div>
+        <div class="spend-progress finance-decoy-progress" aria-label="Доля потраченного дохода">
+          <span style="width:${spentPercent.toFixed(1)}%"></span>
+        </div>
+        <div class="progress-caption">
+          <span>Потрачено ${Math.round(spentPercent)}%</span>
+          <span class="finance-decoy-income-note">${escapeDecoy(DECOY_INCOME_NOTE)}</span>
+        </div>
+      </div>
+      <div class="overview-metrics">
+        <div class="metric-item expense-metric">
+          <span>Расходы</span>
+          <strong>${escapeDecoy(formatDecoyMoney(total))}</strong>
+          <small>за выбранный месяц</small>
+        </div>
+        <div class="metric-rule"></div>
+        <div class="metric-item">
+          <span>Операции</span>
+          <strong>${DECOY_EXPENSES.length}</strong>
+          <small>строк расходов</small>
+        </div>
+      </div>
+    </section>
+
+    <section class="insights" aria-label="Структура расходов">
+      <article class="insight-section types-section">
+        <div class="section-title-row"><div><p class="section-kicker">Структура</p><h2>По типам</h2></div></div>
+        <div class="breakdown-list">${renderDecoyBreakdown(byType, total)}</div>
+      </article>
+      <article class="insight-section categories-section">
+        <div class="section-title-row"><div><p class="section-kicker">Основные траты</p><h2>По категориям</h2></div></div>
+        <div class="breakdown-list">${renderDecoyBreakdown(byCategory, total)}</div>
+      </article>
+    </section>
+
+    <section class="expenses-section">
+      <div class="section-head">
+        <div>
+          <p class="section-kicker">История</p>
+          <div class="expenses-title-line"><h2>Расходы</h2><span class="section-meta">${DECOY_EXPENSES.length} · ${escapeDecoy(formatDecoyMoney(total))}</span></div>
+        </div>
+      </div>
+      <div class="filters" aria-label="Фильтры">
+        <label class="search-field">
+          <span class="visually-hidden">Поиск</span>
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg>
+          <input type="search" placeholder="Поиск расходов…" tabindex="-1">
+        </label>
+        <label class="compact-select"><span class="visually-hidden">Категория</span><select tabindex="-1"><option>Все категории</option></select></label>
+        <label class="compact-select"><span class="visually-hidden">Тип</span><select tabindex="-1"><option>Все типы</option></select></label>
+        <label class="compact-select sort-select"><span class="visually-hidden">Сортировка</span><select tabindex="-1"><option>Сначала ранние</option></select></label>
+        <button class="filter-reset" type="button" tabindex="-1">Сбросить</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th class="day-col">День</th><th>Категория</th><th>Описание</th><th class="money">Сумма</th><th>Тип</th><th class="actions-col"><span class="visually-hidden">Действия</span></th></tr></thead>
+          <tbody>${DECOY_EXPENSES.map((item) => renderDecoyExpenseRow(item, monthAbbr)).join('')}</tbody>
+        </table>
+      </div>
+    </section>
+  `;
+}
+
+function renderDecoyBreakdown(items, total) {
+  return items.map((item, index) => {
+    const percent = total > 0 ? (item.amount / total) * 100 : 0;
+    const color = decoyColor(item.name, index);
+    return `
+      <div class="breakdown-row" style="--item-color:${color}">
+        <div class="breakdown-name"><span class="category-dot"></span><span>${escapeDecoy(item.name)}</span></div>
+        <div class="bar"><i style="width:${percent.toFixed(1)}%"></i></div>
+        <strong>${escapeDecoy(formatDecoyMoney(item.amount))}</strong>
+      </div>`;
+  }).join('');
+}
+
+function renderDecoyExpenseRow(item, monthAbbr) {
+  const color = decoyColor(item.category);
+  return `
+    <tr>
+      <td class="day-cell"><span class="day-number">${item.day}</span><span class="day-month">${escapeDecoy(monthAbbr)}</span></td>
+      <td class="category-cell"><span class="category-mark" style="--item-color:${color}"><span class="category-dot"></span><span>${escapeDecoy(item.category)}</span></span></td>
+      <td class="expense-description-cell">${escapeDecoy(item.description)}</td>
+      <td class="money">${escapeDecoy(formatDecoyMoney(item.amount))}</td>
+      <td><span class="type-text">${escapeDecoy(item.type)}</span></td>
+      <td class="row-actions"></td>
+    </tr>`;
+}
+
+function groupDecoy(items, key) {
+  const totals = new Map();
+  for (const item of items) totals.set(item[key], (totals.get(item[key]) || 0) + item.amount);
+  return [...totals.entries()]
+    .map(([name, amount]) => ({ name, amount }))
+    .sort((a, b) => b.amount - a.amount || a.name.localeCompare(b.name, 'ru'));
+}
+
+function formatDecoyMoney(value) {
+  return new Intl.NumberFormat('ru-RU', {
+    style: 'currency',
+    currency: 'RUB',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(Number(value) || 0);
+}
+
+function currentDecoyMonthAbbr() {
+  const select = document.getElementById('month-select');
+  const match = String(select?.value || '').match(/-(\d{2})$/);
+  if (match) {
+    const index = Number(match[1]) - 1;
+    if (DECOY_MONTH_ABBRS[index]) return DECOY_MONTH_ABBRS[index];
+  }
+
+  const title = (document.getElementById('month-title')?.textContent || '').toLocaleLowerCase('ru');
+  const names = ['январ', 'феврал', 'март', 'апрел', 'май', 'июн', 'июл', 'август', 'сентябр', 'октябр', 'ноябр', 'декабр'];
+  const index = names.findIndex((name) => title.includes(name));
+  return index >= 0 ? DECOY_MONTH_ABBRS[index] : 'мес';
+}
+
+function decoyColor(value, salt = 0) {
+  const palette = ['#74866a', '#b17254', '#7c79a8', '#b89448', '#5f8f91', '#9b6c82', '#6f86a7', '#87935d', '#a36f56', '#777d72'];
+  let hash = salt;
+  for (const char of String(value || '')) hash = ((hash * 31) + char.charCodeAt(0)) | 0;
+  return palette[Math.abs(hash) % palette.length];
+}
+
+function escapeDecoy(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 }
 
 function isUserCancel(error) {
