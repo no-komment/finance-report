@@ -1,4 +1,4 @@
-const CACHE_NAME = "finance-report-v5-d1-autosync";
+const CACHE_NAME = "finance-report-v6-biometric-lock";
 
 const APP_SHELL = [
   "./",
@@ -10,6 +10,7 @@ const APP_SHELL = [
   "./js/expenses.js",
   "./js/xlsx.js",
   "./js/github-sync.js",
+  "./js/app-lock.js",
   "./js/utils.js",
   "./assets/icons/favicon.ico",
   "./assets/icons/icon-192.png",

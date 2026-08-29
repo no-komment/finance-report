@@ -1,3 +1,5 @@
+import './app-lock.js';
+
 const API_URL = '/api/data';
 const VERSION_KEY = 'expenses-app:d1-version:v1';
 const DIRTY_KEY = 'expenses-app:d1-dirty:v1';
