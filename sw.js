@@ -1,4 +1,4 @@
-const CACHE_NAME = "finance-report-v14-about-refresh";
+const CACHE_NAME = "finance-report-v15-about-readable";
 
 const APP_SHELL = [
   "/",
