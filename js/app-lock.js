@@ -130,6 +130,20 @@ function installStyles() {
       cursor: pointer;
       padding: 8px;
     }
+    /* Safari/iOS: native <select> can ignore min-height and render
+       shorter than neighboring inputs. Keep expense fields equal. */
+    @media (max-width: 700px) {
+      .expense-form-grid #expense-category,
+      .expense-form-grid #expense-type {
+        height: 46px !important;
+        min-height: 46px !important;
+        max-height: 46px !important;
+      }
+      .expense-form-grid #expense-type {
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
+      }
+    }
     @media (prefers-color-scheme: dark) {
       #finance-device-lock { background: #151613; color: #f4f3ef; }
       .finance-device-lock-icon { background: #f4f3ef; color: #151613; box-shadow: none; }

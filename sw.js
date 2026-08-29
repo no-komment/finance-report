@@ -1,4 +1,4 @@
-const CACHE_NAME = "finance-report-v8-biometric-grace";
+const CACHE_NAME = "finance-report-v9-safari-select-fix";
 
 const APP_SHELL = [
   "/",
