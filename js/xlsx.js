@@ -20,6 +20,7 @@ export function parseWorkbook(workbook) {
   const XLSX = getXLSX();
   const categories = [];
   const types = [];
+  const capitalSources = [];
   const months = [];
 
   for (const sheetName of workbook.SheetNames) {
@@ -29,6 +30,19 @@ export function parseWorkbook(workbook) {
       for (const row of rows) {
         if (normalizeText(row[0])) categories.push(normalizeText(row[0]));
         if (normalizeText(row[1])) types.push(normalizeText(row[1]));
+      }
+      continue;
+    }
+    if (normalizeText(sheetName).toLocaleLowerCase('ru') === 'источники капитала') {
+      const headerRow = rows.findIndex((row) => normalizeText(row[0]) === 'Владелец' && normalizeText(row[1]) === 'Источник');
+      const start = headerRow >= 0 ? headerRow + 1 : 0;
+      for (let r = start; r < rows.length; r++) {
+        const owner = normalizeText(rows[r][0]);
+        const name = normalizeText(rows[r][1]);
+        const amount = numberFromCell(rows[r][2]);
+        const currency = normalizeText(rows[r][3]) || '₽';
+        if (!owner || !name || amount === null || amount < 0) continue;
+        capitalSources.push({ id: uid(), owner, name, amount, currency });
       }
       continue;
     }
@@ -71,6 +85,7 @@ export function parseWorkbook(workbook) {
     settings: { currency: 'RUB', locale: 'ru-RU' },
     categories: uniqueStrings(categories),
     types: uniqueStrings(types),
+    capitalSources,
     months,
   });
 }
@@ -169,6 +184,24 @@ export function exportXlsx(data) {
   const refsWs = XLSX.utils.aoa_to_sheet(refs);
   refsWs['!cols'] = [{ wch: 25 }, { wch: 20 }];
   XLSX.utils.book_append_sheet(wb, refsWs, 'Виды трат');
+
+  const capitalRows = [['Владелец', 'Источник', 'Сумма', 'Валюта']];
+  for (const source of data.capitalSources || []) {
+    capitalRows.push([
+      escapeCsvLikeFormula(source.owner),
+      escapeCsvLikeFormula(source.name),
+      source.amount,
+      escapeCsvLikeFormula(source.currency || '₽'),
+    ]);
+  }
+  const capitalWs = XLSX.utils.aoa_to_sheet(capitalRows);
+  capitalWs['!cols'] = [{ wch: 22 }, { wch: 30 }, { wch: 18 }, { wch: 12 }];
+  for (let r = 1; r < capitalRows.length; r++) {
+    const cell = capitalWs[XLSX.utils.encode_cell({ r, c: 2 })];
+    if (cell && typeof cell.v === 'number') cell.z = '#,##0.00';
+  }
+  XLSX.utils.book_append_sheet(wb, capitalWs, 'Источники капитала');
+
   XLSX.writeFile(wb, `Отчеты-${new Date().toISOString().slice(0, 10)}.xlsx`);
 }
 
@@ -176,5 +209,6 @@ export function importPreview(data) {
   return {
     months: data.months.map((m) => ({ name: m.name, count: m.expenses.length })),
     totalExpenses: data.months.reduce((sum, m) => sum + m.expenses.length, 0),
+    capitalSources: data.capitalSources?.length || 0,
   };
 }

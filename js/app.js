@@ -47,6 +47,10 @@ function bindEvents() {
   $('#add-income-source-btn').addEventListener('click', () => addIncomeSourceRow());
   $('#income-sources').addEventListener('input', updateIncomeSourcesTotal);
   $('#income-sources').addEventListener('click', handleIncomeSourceClick);
+  $('#capital-form').addEventListener('submit', saveCapitalSources);
+  $('#add-capital-source-btn').addEventListener('click', () => addCapitalSourceRow());
+  $('#capital-sources').addEventListener('input', updateCapitalTotals);
+  $('#capital-sources').addEventListener('click', handleCapitalSourceClick);
   $('#reference-form').addEventListener('submit', saveReferenceFromForm);
   $('#search-input').addEventListener('input', (e) => { filters.search = e.target.value; renderExpenses(); });
   $('#category-filter').addEventListener('change', (e) => { filters.category = e.target.value; renderExpenses(); });
@@ -99,6 +103,7 @@ function handleDocumentClick(e) {
   if (action === 'import-json') $('#json-input').click();
   if (action === 'export-json') exportJson();
   if (action === 'references') { renderReferences(); $('#references-dialog').showModal(); }
+  if (action === 'capital') openCapitalDialog();
   if (action === 'github') openGithubDialog();
   if (action === 'reset-seed') resetToSeed();
   if (action === 'create-first-month' || action === 'create-month') openMonthDialog('create');
@@ -654,7 +659,7 @@ async function handleJsonImport(file) {
 function showImportPreview(incoming, title) {
   pendingImport = incoming; const p = importPreview(incoming); $('#import-title').textContent = title;
   const root=$('#import-preview'); root.replaceChildren();
-  const summary=document.createElement('p'); summary.textContent=`Найдено месяцев: ${p.months.length}. Всего расходов: ${p.totalExpenses}.`; root.append(summary);
+  const summary=document.createElement('p'); summary.textContent=`Найдено месяцев: ${p.months.length}. Всего расходов: ${p.totalExpenses}. Источников капитала: ${p.capitalSources || 0}.`; root.append(summary);
   const ul=document.createElement('ul'); for(const m of p.months){const li=document.createElement('li'); li.textContent=`${m.name} — ${m.count} расходов`; ul.append(li);} root.append(ul);
   const note=document.createElement('p'); note.className='notice'; note.textContent='При объединении совпадающие месяцы объединяются, а точные дубликаты расходов по дню/категории/описанию/сумме/типу не добавляются повторно.'; root.append(note);
   $('#import-dialog').showModal();
@@ -673,6 +678,110 @@ async function resetToSeed() {
   if (!confirm('Сбросить локальные изменения и заново загрузить data/expenses.json? Перед сбросом будет сохранена резервная копия в localStorage.')) return;
   try { backupData(data); data=await loadSeed(); selectedMonthId=data.months[0]?.id||''; renderAll(); toast('Seed JSON загружен'); }
   catch(error){toast(error.message);}
+}
+
+function openCapitalDialog() {
+  renderCapitalSources(data.capitalSources || []);
+  $('#capital-dialog').showModal();
+}
+
+function renderCapitalSources(sources) {
+  const root = $('#capital-sources');
+  root.replaceChildren();
+  for (const source of sources) addCapitalSourceRow(source, false);
+  updateCapitalTotals();
+}
+
+function addCapitalSourceRow(source = {}, focus = true) {
+  const root = $('#capital-sources');
+  const row = document.createElement('div');
+  row.className = 'capital-source-row';
+  row.dataset.sourceId = source.id || '';
+
+  const ownerLabel = document.createElement('label');
+  const ownerCaption = document.createElement('span'); ownerCaption.textContent = 'Владелец';
+  const ownerInput = document.createElement('input');
+  ownerInput.type = 'text'; ownerInput.className = 'capital-source-owner'; ownerInput.placeholder = 'Например, Максим'; ownerInput.autocomplete = 'off'; ownerInput.value = source.owner || '';
+  ownerLabel.append(ownerCaption, ownerInput);
+
+  const nameLabel = document.createElement('label');
+  const nameCaption = document.createElement('span'); nameCaption.textContent = 'Где хранится';
+  const nameInput = document.createElement('input');
+  nameInput.type = 'text'; nameInput.className = 'capital-source-name'; nameInput.placeholder = 'Альфа Банк'; nameInput.autocomplete = 'off'; nameInput.value = source.name || '';
+  nameLabel.append(nameCaption, nameInput);
+
+  const amountLabel = document.createElement('label');
+  const amountCaption = document.createElement('span'); amountCaption.textContent = 'Сумма';
+  const amountInput = document.createElement('input');
+  amountInput.type = 'text'; amountInput.inputMode = 'decimal'; amountInput.className = 'capital-source-amount'; amountInput.placeholder = '10 000'; amountInput.autocomplete = 'off'; amountInput.value = source.amount ? String(source.amount) : '';
+  amountLabel.append(amountCaption, amountInput);
+
+  const currencyLabel = document.createElement('label');
+  const currencyCaption = document.createElement('span'); currencyCaption.textContent = 'Валюта';
+  const currencyInput = document.createElement('input');
+  currencyInput.type = 'text'; currencyInput.className = 'capital-source-currency'; currencyInput.setAttribute('list', 'capital-currency-list'); currencyInput.maxLength = 8; currencyInput.autocomplete = 'off'; currencyInput.value = source.currency || '₽';
+  currencyLabel.append(currencyCaption, currencyInput);
+
+  const remove = document.createElement('button');
+  remove.type = 'button'; remove.className = 'capital-source-remove'; remove.dataset.capitalRemove = ''; remove.setAttribute('aria-label', 'Удалить источник капитала'); remove.title = 'Удалить'; remove.textContent = '×';
+
+  row.append(ownerLabel, nameLabel, amountLabel, currencyLabel, remove);
+  root.append(row);
+  updateCapitalTotals();
+  if (focus) requestAnimationFrame(() => ownerInput.focus());
+}
+
+function handleCapitalSourceClick(e) {
+  const remove = e.target.closest('[data-capital-remove]');
+  if (!remove) return;
+  remove.closest('.capital-source-row')?.remove();
+  updateCapitalTotals();
+}
+
+function collectCapitalSources() {
+  const sources = [];
+  for (const row of $$('#capital-sources .capital-source-row')) {
+    const owner = normalizeText(row.querySelector('.capital-source-owner')?.value);
+    const name = normalizeText(row.querySelector('.capital-source-name')?.value);
+    const rawAmount = String(row.querySelector('.capital-source-amount')?.value || '').trim();
+    const currency = normalizeText(row.querySelector('.capital-source-currency')?.value) || '₽';
+    if (!owner && !name && !rawAmount) continue;
+    if (!owner) throw new Error('Укажите владельца источника капитала.');
+    if (!name) throw new Error('Укажите, где хранится капитал.');
+    const amount = rawAmount ? parseAmountExpression(rawAmount) : 0;
+    sources.push({ id: row.dataset.sourceId || '', owner, name, amount, currency });
+  }
+  return sources;
+}
+
+function updateCapitalTotals() {
+  const totalsByCurrency = new Map();
+  for (const row of $$('#capital-sources .capital-source-row')) {
+    const rawAmount = String(row.querySelector('.capital-source-amount')?.value || '').trim();
+    if (!rawAmount) continue;
+    let amount;
+    try { amount = parseAmountExpression(rawAmount); } catch { continue; }
+    const currency = normalizeText(row.querySelector('.capital-source-currency')?.value) || '₽';
+    totalsByCurrency.set(currency, (totalsByCurrency.get(currency) || 0) + amount);
+  }
+  const target = $('#capital-totals-value');
+  if (!totalsByCurrency.size) { target.textContent = 'Нет данных'; return; }
+  target.textContent = [...totalsByCurrency.entries()]
+    .map(([currency, amount]) => `${amount.toLocaleString('ru-RU', { maximumFractionDigits: 2 })} ${currency}`)
+    .join(' · ');
+}
+
+function saveCapitalSources(e) {
+  e.preventDefault();
+  try {
+    data.capitalSources = collectCapitalSources().map((source) => ({
+      ...source,
+      id: source.id || (globalThis.crypto?.randomUUID?.() || `capital-${Date.now()}-${Math.random().toString(16).slice(2)}`),
+    }));
+    persist();
+    $('#capital-dialog').close();
+    toast('Источники капитала сохранены');
+  } catch (error) { toast(error.message); }
 }
 
 function renderReferences() {

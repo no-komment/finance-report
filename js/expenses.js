@@ -6,6 +6,7 @@ export function emptyData() {
     settings: { currency: 'RUB', locale: 'ru-RU' },
     categories: [],
     types: ['Личный', 'Семейный', 'Жена'],
+    capitalSources: [],
     months: [],
   };
 }
@@ -26,6 +27,7 @@ export function validateData(input) {
   };
   data.categories = uniqueStrings(input.categories || []);
   data.types = uniqueStrings(input.types || []);
+  data.capitalSources = validateCapitalSources(input.capitalSources);
   if (!Array.isArray(input.months)) throw new Error('Поле months должно быть массивом.');
   data.months = input.months.map(validateMonth);
 
@@ -76,6 +78,27 @@ function validateIncomeSources(value, legacyIncome, year, month) {
       id: normalizeText(source?.id) || uid(),
       name: normalizeText(source?.name) || `Доход ${index + 1}`,
       amount,
+    };
+  });
+}
+
+function validateCapitalSources(value) {
+  if (value == null) return [];
+  if (!Array.isArray(value)) throw new Error('Поле capitalSources должно быть массивом.');
+  return value.map((source, index) => {
+    const owner = normalizeText(source?.owner);
+    const name = normalizeText(source?.name);
+    const amount = Number(source?.amount ?? 0);
+    const currency = normalizeText(source?.currency) || '₽';
+    if (!owner) throw new Error(`У источника капитала ${index + 1} отсутствует владелец.`);
+    if (!name) throw new Error(`У источника капитала ${index + 1} отсутствует место хранения.`);
+    if (!Number.isFinite(amount) || amount < 0) throw new Error(`Некорректная сумма источника капитала ${index + 1}.`);
+    return {
+      id: normalizeText(source?.id) || uid(),
+      owner,
+      name,
+      amount,
+      currency,
     };
   });
 }
@@ -178,6 +201,21 @@ export function mergeData(current, incoming) {
   result.categories = uniqueStrings([...result.categories, ...incoming.categories]);
   result.types = uniqueStrings([...result.types, ...incoming.types]);
 
+  const capitalById = new Map(result.capitalSources.map((source) => [source.id, source]));
+  const capitalSignatures = new Set(result.capitalSources.map(capitalSourceSignature));
+  for (const source of incoming.capitalSources || []) {
+    if (source.id && capitalById.has(source.id)) {
+      Object.assign(capitalById.get(source.id), JSON.parse(JSON.stringify(source)));
+      continue;
+    }
+    const signature = capitalSourceSignature(source);
+    if (!capitalSignatures.has(signature)) {
+      const copy = { ...source, id: source.id || uid() };
+      result.capitalSources.push(copy);
+      capitalSignatures.add(signature);
+    }
+  }
+
   for (const incomingMonth of incoming.months) {
     const existing = result.months.find((m) => m.id === incomingMonth.id);
     if (!existing) {
@@ -206,6 +244,15 @@ export function mergeData(current, incoming) {
   }
   result.months.sort((a, b) => b.id.localeCompare(a.id));
   return result;
+}
+
+function capitalSourceSignature(source) {
+  return [
+    normalizeText(source.owner).toLocaleLowerCase('ru'),
+    normalizeText(source.name).toLocaleLowerCase('ru'),
+    Number(source.amount || 0).toFixed(2),
+    normalizeText(source.currency) || '₽',
+  ].join('|');
 }
 
 export function expenseSignature(e) {
