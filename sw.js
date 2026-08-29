@@ -1,4 +1,4 @@
-const CACHE_NAME = "finance-report-v12-decoy-on-auth";
+const CACHE_NAME = "finance-report-v13-income-analytics";
 
 const APP_SHELL = [
   "/",
