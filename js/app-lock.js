@@ -511,6 +511,9 @@ function showEnrollment(message = '') {
 }
 
 function showUnlock(message = '') {
+  // Шаблонные данные включаем только тогда, когда реально требуется
+  // повторная авторизация через Face ID / Windows Hello.
+  activateDecoy({ closeTransient: true });
   lockNow();
   title.textContent = 'Приложение заблокировано';
   hint.textContent = message || `Подтвердите вход через ${deviceLabel()}.`;
@@ -619,10 +622,9 @@ function handleVisibilityChange() {
 }
 
 function rememberHidden() {
-  // Всегда возвращаем шаблонные данные до того, как iOS/Windows успеет
-  // сделать превью приложения для переключателя окон.
-  activateDecoy({ closeTransient: true });
-
+  // При обычном сворачивании/переключении приложения шаблон не включаем.
+  // Если пользователь вернётся в пределах grace period, он продолжит работу
+  // с тем же экраном и тем же режимом отображения данных.
   if (!supported || !credentialId) return;
   sessionStorage.setItem(HIDDEN_AT_KEY, String(Date.now()));
   if (!busy) lockNow();
