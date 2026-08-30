@@ -99,6 +99,21 @@ function installSummaryComparisons() {
       characterData: true,
     });
 
+    // Экран-приманка переключается классом на <html>. При снятии шаблона
+    // содержимое месяца может не перерисоваться, поэтому отдельно следим
+    // за изменением класса и сразу пересчитываем реальные сравнения.
+    const privacyObserver = new MutationObserver((mutations) => {
+      if (mutations.some((mutation) =>
+        mutation.type === 'attributes' && mutation.attributeName === 'class'
+      )) {
+        scheduleSummaryComparisons();
+      }
+    });
+    privacyObserver.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class'],
+    });
+
     window.addEventListener('storage', (event) => {
       if (event.key === DATA_KEY) scheduleSummaryComparisons();
     });
