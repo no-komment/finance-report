@@ -1,4 +1,4 @@
-const CACHE_NAME = "finance-report-v21-d1-resume-pull";
+const CACHE_NAME = "finance-report-v22-desktop-readability";
 
 const APP_SHELL = [
   "/",

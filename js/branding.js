@@ -11,6 +11,7 @@ let comparisonScheduled = false;
 
 applyBranding();
 installDesktopReadability();
+installTypeBreakdownPalette();
 installSummaryComparisons();
 
 function applyBranding() {
@@ -40,35 +41,127 @@ function installDesktopReadability() {
   const style = document.createElement('style');
   style.id = 'runtime-desktop-readability';
   style.textContent = `
-    /* Телефон уже хорошо читается — увеличиваем только desktop/tablet UI. */
+    /*
+     * Desktop readability pass.
+     * Телефонные стили не трогаем: изменения действуют только от 981px.
+     */
     @media (min-width: 981px) {
-      .save-status { font-size: 12px; }
-      .sidebar-section-head { font-size: 12px; letter-spacing: .05em; }
-      .month-item small { font-size: 11px; }
-      .theme-control .theme-value { font-size: 12px; }
+      body { font-size: 15px !important; }
 
+      /* Sidebar / header */
+      .brand strong { font-size: 16px !important; }
+      .save-status { font-size: 12px !important; color: var(--text-secondary) !important; }
+      .sidebar-section-head { font-size: 12px !important; letter-spacing: .05em !important; }
+      .month-item small { font-size: 12px !important; color: var(--text-secondary) !important; }
+      .theme-control .theme-value { font-size: 12px !important; color: var(--text-secondary) !important; }
       .eyebrow,
       .section-kicker,
-      .dialog-kicker { font-size: 11px; }
+      .dialog-kicker { font-size: 12px !important; color: var(--text-secondary) !important; }
+      .header-subtitle { font-size: 14px !important; }
 
-      .progress-caption,
-      .metric-item small,
-      .section-meta,
+      /* Main summary */
+      .summary-label { font-size: 14px !important; }
+      .balance-context { font-size: 14px !important; }
+      .progress-caption { font-size: 13px !important; color: var(--text-secondary) !important; }
+      .metric-item span { font-size: 13px !important; }
+      .metric-item small { font-size: 13px !important; color: var(--text-secondary) !important; }
+      .section-meta { font-size: 13px !important; color: var(--text-secondary) !important; }
+
+      /* "По типам" / "По категориям" */
+      .breakdown-name { font-size: 14px !important; }
+      .breakdown-row strong { font-size: 14px !important; }
+      .breakdown-list.muted { font-size: 13px !important; }
+      .breakdown-name .category-dot { width: 8px !important; height: 8px !important; }
+      .bar { height: 5px !important; }
+
+      /* Filters / expenses table */
       .filter-reset,
-      .filter-chip { font-size: 12px; }
+      .filter-chip { font-size: 12px !important; }
+      th { font-size: 12px !important; color: var(--text-secondary) !important; }
+      .type-text { font-size: 13px !important; }
+      .row-action { font-size: 13px !important; }
 
-      th { font-size: 11px; }
+      /* Dialogs / reference lists / import-export */
+      .form-grid label span { font-size: 13px !important; }
+      .refs-head p { font-size: 12px !important; color: var(--text-secondary) !important; }
+      .notice { font-size: 13px !important; }
+      .data-actions-grid strong { font-size: 13px !important; }
+      .data-actions-grid small { font-size: 12px !important; color: var(--text-secondary) !important; }
+      .reset-data-button { font-size: 12px !important; }
+      .toast { font-size: 13px !important; }
+      .button.compact { font-size: 13px !important; }
 
+      /* Income / capital UI */
       .income-sources-head > span,
       .income-total-line,
       .capital-columns-head,
-      .capital-totals { font-size: 12px !important; }
+      .capital-totals { font-size: 13px !important; }
+      .capital-editor-head small { font-size: 13px !important; }
+      #expense-amount-result { font-size: 12px !important; }
 
-      .capital-editor-head small { font-size: 12px !important; }
+      /*
+       * Analytics: в модуле было много 7–10px подписей.
+       * На desktop поднимаем их до читаемого минимума, мобильные размеры не меняются.
+       */
+      .finance-period-fields label > span { font-size: 12px !important; }
+      .finance-quick-ranges button { font-size: 12px !important; }
+      .finance-analytics-title-row span { font-size: 12px !important; }
+      .finance-period-badge { font-size: 11px !important; }
+      .finance-kpi > span,
+      .finance-kpi > small { font-size: 12px !important; }
+      .finance-card-head span { font-size: 11px !important; }
+      .finance-card-head > small { font-size: 12px !important; }
+      .finance-card-stat small { font-size: 11px !important; }
+      .finance-axis-label { font-size: 11px !important; }
+      .finance-peak-label { font-size: 11px !important; }
+      .finance-chart-footer { font-size: 11px !important; }
+      .finance-donut > div span { font-size: 11px !important; }
+      .finance-legend-row { font-size: 12px !important; }
+      .finance-legend-row strong { font-size: 12px !important; }
+      .finance-legend-row small { font-size: 11px !important; }
+      .finance-bar-label { font-size: 12px !important; }
+      .finance-bar-row > small { font-size: 11px !important; }
+      .finance-income-estimate { font-size: 11px !important; }
+      .finance-cashflow-legend { font-size: 11px !important; }
+      .finance-cashflow-values { font-size: 10px !important; }
+      .finance-cashflow-month > span,
+      .finance-cashflow-month > small { font-size: 10px !important; }
+      .finance-income-label { font-size: 12px !important; }
+      .finance-income-label strong { font-size: 12px !important; }
+      .finance-income-meta { font-size: 10px !important; }
+      .finance-weekday-value { font-size: 10px !important; }
+      .finance-weekday > span { font-size: 11px !important; }
+      .finance-observations p { font-size: 12px !important; }
+      .finance-top-rank { font-size: 10px !important; }
+      .finance-top-row strong,
+      .finance-top-row b { font-size: 12px !important; }
+      .finance-top-row small { font-size: 10px !important; }
+      .finance-empty-chart { font-size: 12px !important; }
 
-      #expense-amount-result {
-        font-size: 11px !important;
+      /*
+       * About: на 1920x1080 шесть status-карточек в ряд сильно сжимали подписи.
+       * Делаем 3 в ряд и увеличиваем самые мелкие подписи.
+       */
+      .finance-about-status-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+        gap: 10px !important;
       }
+      .finance-about-status > div {
+        font-size: 12px !important;
+        color: var(--text-secondary) !important;
+      }
+      .finance-about-feature p,
+      .finance-about-tech-card p,
+      .finance-about-privacy-row p,
+      .finance-about-note p,
+      .finance-about-warning p { font-size: 12px !important; }
+      .finance-about-flow-step > span { font-size: 11px !important; }
+      .finance-about-flow-step small { font-size: 11px !important; color: var(--text-secondary) !important; }
+      .finance-about-flow-step p { font-size: 11px !important; }
+      .finance-about-note strong,
+      .finance-about-warning span { font-size: 12px !important; }
+      .finance-about-tech-card > span { font-size: 11px !important; color: var(--text-secondary) !important; }
+      .finance-about-footer { font-size: 11px !important; color: var(--text-secondary) !important; }
     }
 
     /* Сравнения на главной сводке. */
@@ -80,6 +173,51 @@ function installDesktopReadability() {
     }
   `;
   document.head.append(style);
+}
+
+const TYPE_BREAKDOWN_COLORS = new Map([
+  ['Семейный', '#b7779a'],
+  ['Жена', '#6f93b6'],
+  ['Личный', '#c58a5f'],
+]);
+
+const TYPE_FALLBACK_COLORS = [
+  '#7b9a70',
+  '#8d7ab5',
+  '#5f9d98',
+  '#b76f68',
+  '#a0a35f',
+  '#6f84a7',
+  '#a874a0',
+];
+
+function installTypeBreakdownPalette() {
+  const start = () => {
+    const root = document.getElementById('by-type');
+    if (!root) {
+      setTimeout(start, 120);
+      return;
+    }
+
+    const apply = () => {
+      const rows = [...root.querySelectorAll('.breakdown-row')];
+      rows.forEach((row, index) => {
+        const label = row.querySelector('.breakdown-name span:last-child')?.textContent?.trim() || '';
+        const color = TYPE_BREAKDOWN_COLORS.get(label) ||
+          TYPE_FALLBACK_COLORS[index % TYPE_FALLBACK_COLORS.length];
+        row.style.setProperty('--item-color', color);
+      });
+    };
+
+    new MutationObserver(apply).observe(root, { childList: true, subtree: true });
+    apply();
+  };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', start, { once: true });
+  } else {
+    start();
+  }
 }
 
 function installSummaryComparisons() {
