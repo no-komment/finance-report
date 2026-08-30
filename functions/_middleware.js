@@ -192,7 +192,7 @@ function loginPage(error = '') {
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="robots" content="noindex,nofollow,noarchive">
-  <title>Вход — Runtime</title>
+  <title>Вход — OwenLogic</title>
   <style>
     :root { color-scheme: light dark; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
     * { box-sizing: border-box; }
@@ -219,7 +219,7 @@ function loginPage(error = '') {
 </head>
 <body>
   <main class="card">
-    <p class="eyebrow">Runtime</p>
+    <p class="eyebrow">Расходы</p>
     <h1>Вход</h1>
     <p class="hint">Введите пароль для доступа к приложению.</p>
     ${errorBlock}
