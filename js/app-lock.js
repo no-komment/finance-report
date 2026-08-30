@@ -1,6 +1,7 @@
 const CREDENTIAL_KEY = 'expenses-app:device-lock-credential:v1';
 const USER_KEY = 'expenses-app:device-lock-user:v1';
 const HIDDEN_AT_KEY = 'expenses-app:device-lock-hidden-at:v1';
+const WAS_UNLOCKED_BEFORE_HIDDEN_KEY = 'expenses-app:device-lock-was-unlocked:v1';
 // Короткое переключение в другое приложение не требует повторной биометрии.
 // После 2 минут в фоне приложение снова потребует Face ID / Windows Hello.
 const LOCK_AFTER_HIDDEN_MS = 2 * 60 * 1000;
@@ -623,10 +624,12 @@ function handleVisibilityChange() {
 
 function rememberHidden() {
   // При обычном сворачивании/переключении приложения шаблон не включаем.
-  // Если пользователь вернётся в пределах grace period, он продолжит работу
-  // с тем же экраном и тем же режимом отображения данных.
+  // Важно запомнить, было ли приложение РЕАЛЬНО разблокировано до ухода
+  // в фон. Иначе отменённый Face ID / Windows Hello можно было обойти:
+  // переключиться на другую вкладку и вернуться в пределах grace period.
   if (!supported || !credentialId) return;
   sessionStorage.setItem(HIDDEN_AT_KEY, String(Date.now()));
+  sessionStorage.setItem(WAS_UNLOCKED_BEFORE_HIDDEN_KEY, unlocked ? '1' : '0');
   if (!busy) lockNow();
 }
 
@@ -635,14 +638,25 @@ function restoreAfterBackground() {
   if (!hiddenAt) return;
 
   const hiddenFor = Date.now() - hiddenAt;
+  const wasUnlockedBeforeHidden =
+    sessionStorage.getItem(WAS_UNLOCKED_BEFORE_HIDDEN_KEY) === '1';
+
+  // Если приложение уже было заблокировано до переключения вкладки
+  // (например, пользователь отменил Windows Hello), grace period НЕ ДОЛЖЕН
+  // разблокировать его. Оставляем экран блокировки до успешной биометрии.
+  if (!wasUnlockedBeforeHidden) {
+    showUnlock();
+    return;
+  }
+
   if (hiddenFor >= LOCK_AFTER_HIDDEN_MS) {
     showUnlock();
     unlockWithBiometrics({ silentFailure: true });
     return;
   }
 
-  // Вернулись быстро (например, посмотрели операцию в банковском приложении):
-  // снимаем защитный экран без повторного Face ID / Windows Hello.
+  // Только если приложение было успешно разблокировано ДО ухода в фон
+  // и пользователь вернулся быстро, разрешаем grace period без биометрии.
   releaseLock();
 }
 
@@ -660,6 +674,7 @@ function lockNow() {
 function releaseLock() {
   unlocked = true;
   sessionStorage.removeItem(HIDDEN_AT_KEY);
+  sessionStorage.removeItem(WAS_UNLOCKED_BEFORE_HIDDEN_KEY);
   document.documentElement.classList.remove('finance-device-locked');
   if (overlay) overlay.hidden = true;
 }

@@ -1,4 +1,4 @@
-const CACHE_NAME = "finance-report-v16-runtime-readability";
+const CACHE_NAME = "finance-report-v19-biometric-bypass-fix";
 
 const APP_SHELL = [
   "/",
