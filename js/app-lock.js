@@ -920,6 +920,11 @@ function guardDecoyInteractions(event) {
   const target = event.target instanceof Element ? event.target : null;
   if (!target) return;
 
+  // Экран биометрической блокировки должен оставаться интерактивным даже
+  // когда активен шаблонный режим. Иначе capture-guard приманки перехватывает
+  // клики раньше обработчиков Windows Hello / Face ID.
+  if (target.closest('#finance-device-lock')) return;
+
   // Разрешены только глаз, выбор уже существующего месяца и переключение темы.
   if (target.closest('#finance-decoy-toggle, #month-select, .month-item, #theme-btn')) return;
 
