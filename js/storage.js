@@ -11,14 +11,22 @@ const D1_REMOTE_APPLY_KEY = 'expenses-app:d1-remote-apply:v1';
 const D1_API_URL = '/api/data';
 const AUTO_SYNC_DELAY_MS = 1200;
 const AUTO_SYNC_RETRY_MS = 15000;
+const REMOTE_CHECK_MIN_INTERVAL_MS = 5000;
+const REMOTE_RELOAD_GUARD_KEY = 'expenses-app:d1-remote-reload:v1';
 
 let autoSyncTimer = null;
 let autoSyncInFlight = null;
 let autoSyncQueued = false;
+let remoteCheckInFlight = null;
+let lastRemoteCheckAt = 0;
 let listenersInstalled = false;
 
 export async function loadInitialData() {
   installAutoSyncListeners();
+
+  // После reload, вызванного новой D1-версией, следующий initial load уже
+  // увидит одинаковые данные. Guard можно снять.
+  sessionStorage.removeItem(REMOTE_RELOAD_GUARD_KEY);
 
   const local = readLocalData();
   const remote = await fetchD1Data();
@@ -219,7 +227,94 @@ function scheduleAutoSync(delay = AUTO_SYNC_DELAY_MS) {
   autoSyncTimer = setTimeout(() => { void flushD1AutoSync(); }, delay);
 }
 
-async function fetchD1Data() {
+// Проверяет, не появилась ли в D1 новая версия с другого устройства.
+// Если локальная копия чистая — автоматически принимает облачную версию.
+// Если локально есть несохранённые изменения — ничего не перезаписывает.
+async function refreshFromD1({ force = false, reason = 'resume' } = {}) {
+  if (typeof window === 'undefined') return { ok: true, skipped: true };
+  if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+    return { ok: false, offline: true };
+  }
+
+  const now = Date.now();
+  if (!force && now - lastRemoteCheckAt < REMOTE_CHECK_MIN_INTERVAL_MS) {
+    return { ok: true, throttled: true };
+  }
+
+  if (remoteCheckInFlight) return remoteCheckInFlight;
+
+  lastRemoteCheckAt = now;
+  remoteCheckInFlight = performRemoteCheck(reason)
+    .finally(() => {
+      remoteCheckInFlight = null;
+    });
+
+  return remoteCheckInFlight;
+}
+
+async function performRemoteCheck(reason) {
+  const local = readLocalData();
+  if (!local) return { ok: true, skipped: true };
+
+  const remote = await fetchD1Data({ passive: true });
+  if (!remote.ok) return remote;
+
+  const remoteData = migrateData(remote.payload.data);
+  const remoteSerialized = JSON.stringify(remoteData);
+  const remoteVersion = remote.payload.version || null;
+
+  const localSerialized = JSON.stringify(local);
+  const localVersion = localStorage.getItem(D1_VERSION_KEY);
+  const dirty = localStorage.getItem(D1_DIRTY_KEY) === '1';
+
+  // Данные одинаковые: только обновляем служебную версию/снимок.
+  if (remoteSerialized === localSerialized) {
+    rememberSyncedSnapshot(localSerialized, remoteVersion);
+    return { ok: true, same: true, version: remoteVersion };
+  }
+
+  // Есть локальные изменения. Никогда не затираем их автоматически.
+  if (dirty) {
+    if (localVersion && remoteVersion && localVersion !== remoteVersion) {
+      emitSyncState(
+        'conflict',
+        'На другом устройстве есть более новая версия D1, а здесь есть локальные изменения. Автоматическое обновление остановлено.'
+      );
+      return { ok: false, conflict: true, remote: remote.payload };
+    }
+
+    // Облако не менялось — можно спокойно отправить локальные изменения.
+    scheduleAutoSync(150);
+    return { ok: true, localDirty: true };
+  }
+
+  // Локальная копия чистая, а D1 отличается — облако считаем актуальным.
+  // Сохраняем backup перед заменой.
+  backupData(local);
+  writeCloudSnapshot(remoteData, remoteSerialized, remoteVersion);
+
+  emitSyncState(
+    'updated',
+    reason === 'online'
+      ? 'После восстановления сети загружена новая версия из D1.'
+      : 'На другом устройстве найдена новая версия. Данные обновлены из D1.'
+  );
+
+  // app.js держит рабочий объект data в памяти. Чтобы не менять всю архитектуру
+  // приложения и гарантированно перерисовать ВСЕ модули (аналитику, приманку,
+  // месяцы, капитал), после принятия новой D1-копии делаем один безопасный reload.
+  // Guard нужен только против теоретической петли перезагрузки.
+  const guardValue = `${remoteVersion || ''}:${remoteSerialized.length}`;
+  const previousGuard = sessionStorage.getItem(REMOTE_RELOAD_GUARD_KEY);
+  if (previousGuard !== guardValue) {
+    sessionStorage.setItem(REMOTE_RELOAD_GUARD_KEY, guardValue);
+    setTimeout(() => window.location.reload(), 60);
+  }
+
+  return { ok: true, updated: true, version: remoteVersion };
+}
+
+async function fetchD1Data(options = {}) {
   try {
     const response = await fetch(D1_API_URL, {
       method: 'GET',
@@ -237,12 +332,15 @@ async function fetchD1Data() {
       return { ok: false, status: 500 };
     }
 
-    // Пустая база: если локальные данные уже есть, первая запись уйдет через autosync.
+    // Пустая база: при начальной загрузке локальные данные станут первой D1-копией.
+    // При пассивной фоновой проверке ничего не меняем.
     if (response.status === 404) {
-      localStorage.removeItem(D1_VERSION_KEY);
-      if (localStorage.getItem(DATA_KEY)) {
-        localStorage.setItem(D1_DIRTY_KEY, '1');
-        scheduleAutoSync();
+      if (!options.passive) {
+        localStorage.removeItem(D1_VERSION_KEY);
+        if (localStorage.getItem(DATA_KEY)) {
+          localStorage.setItem(D1_DIRTY_KEY, '1');
+          scheduleAutoSync();
+        }
       }
       return { ok: false, empty: true, status: 404 };
     }
@@ -284,13 +382,29 @@ function installAutoSyncListeners() {
   listenersInstalled = true;
 
   window.addEventListener('online', () => {
-    if (localStorage.getItem(D1_DIRTY_KEY) === '1') scheduleAutoSync(200);
+    if (localStorage.getItem(D1_DIRTY_KEY) === '1') {
+      scheduleAutoSync(200);
+    } else {
+      void refreshFromD1({ force: true, reason: 'online' });
+    }
   });
 
   document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible' && localStorage.getItem(D1_DIRTY_KEY) === '1') {
-      scheduleAutoSync(300);
+    if (document.visibilityState !== 'visible') return;
+
+    if (localStorage.getItem(D1_DIRTY_KEY) === '1') {
+      scheduleAutoSync(250);
     }
+
+    void refreshFromD1({ reason: 'visibility' });
+  });
+
+  window.addEventListener('focus', () => {
+    void refreshFromD1({ reason: 'focus' });
+  });
+
+  window.addEventListener('pageshow', () => {
+    void refreshFromD1({ reason: 'pageshow' });
   });
 }
 
