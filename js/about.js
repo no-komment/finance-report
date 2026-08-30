@@ -101,7 +101,7 @@ function createAboutDialog() {
           </div>
           <div>
             <p class="dialog-kicker">О приложении</p>
-            <h2>Runtime</h2>
+            <h2>Расходы</h2>
             <p>Личный финансовый журнал с офлайн-режимом, защищённой облачной синхронизацией и аналитикой.</p>
           </div>
         </div>
@@ -356,9 +356,9 @@ function installAboutStyles() {
     .finance-about-pills{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px}
     .finance-about-pills span{display:flex;align-items:center;gap:6px;padding:6px 10px;border:1px solid var(--border);border-radius:999px;background:var(--surface-raised);font-size:11px;font-weight:680;color:var(--text-secondary)}
     .finance-about-pills i{width:6px;height:6px;border-radius:50%;background:#66906e;box-shadow:0 0 0 3px color-mix(in srgb,#66906e 16%,transparent)}
-    .finance-about-status-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+    .finance-about-status-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px}
     .finance-about-status{min-width:0;padding:13px 13px 12px;border:1px solid var(--border);border-radius:15px;background:var(--surface-raised)}
-    .finance-about-status>div{display:flex;align-items:center;gap:6px;min-width:0;color:var(--text-secondary);font-size:12px;white-space:nowrap;overflow:hidden}
+    .finance-about-status>div{display:flex;align-items:center;gap:6px;min-width:0;color:var(--text-tertiary);font-size:10px;white-space:nowrap;overflow:hidden}
     .finance-about-status>div span{overflow:hidden;text-overflow:ellipsis}
     .finance-about-status>div i{width:6px;height:6px;border-radius:50%;background:var(--text-tertiary);flex:0 0 auto}
     .finance-about-status strong{display:block;margin-top:7px;font-size:16px;letter-spacing:-.02em;overflow:hidden;text-overflow:ellipsis}
@@ -377,12 +377,12 @@ function installAboutStyles() {
     .finance-about-feature:hover{transform:translateY(-2px);border-color:color-mix(in srgb,var(--text-tertiary) 45%,var(--border))}
     .finance-about-feature-icon,.finance-about-privacy-icon{width:34px;height:34px;display:grid;place-items:center;flex:0 0 auto;border-radius:11px;background:var(--surface-hover);color:var(--text-primary)}
     .finance-about-feature-icon svg,.finance-about-privacy-icon svg{width:19px;height:19px;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
-    .finance-about-feature h3{margin:1px 0 6px;font-size:15px}.finance-about-feature p,.finance-about-tech-card p,.finance-about-privacy-row p,.finance-about-note p,.finance-about-warning p{margin:0;color:var(--text-secondary);font-size:12px;line-height:1.6}
+    .finance-about-feature h3{margin:1px 0 6px;font-size:14px}.finance-about-feature p,.finance-about-tech-card p,.finance-about-privacy-row p,.finance-about-note p,.finance-about-warning p{margin:0;color:var(--text-secondary);font-size:11px;line-height:1.6}
     .finance-about-flow{display:grid;grid-template-columns:minmax(0,1fr) 42px minmax(0,1fr) 42px minmax(0,1fr) 42px minmax(0,1fr);align-items:stretch}
     .finance-about-flow-step{border:1px solid var(--border);border-radius:17px;padding:17px;text-align:left;background:var(--surface-raised);color:inherit;font:inherit;cursor:default;transition:transform 160ms ease,box-shadow 160ms ease}
     .finance-about-flow-step:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(15,18,15,.07)}
     .finance-about-flow-step>span{width:24px;height:24px;display:grid;place-items:center;margin-bottom:18px;border-radius:8px;background:var(--text-primary);color:var(--surface);font-size:9px;font-weight:750}
-    .finance-about-flow-step small{display:block;color:var(--text-secondary);font-size:11px;margin-bottom:5px}.finance-about-flow-step strong{display:block;font-size:14px;margin-bottom:7px}.finance-about-flow-step p{margin:0;color:var(--text-secondary);font-size:11px;line-height:1.58}
+    .finance-about-flow-step small{display:block;color:var(--text-tertiary);font-size:10px;margin-bottom:5px}.finance-about-flow-step strong{display:block;font-size:14px;margin-bottom:7px}.finance-about-flow-step p{margin:0;color:var(--text-secondary);font-size:10px;line-height:1.55}
     .finance-about-flow-connector{display:flex;justify-content:center;align-items:center;gap:3px}.finance-about-flow-connector i{width:4px;height:4px;border-radius:50%;background:var(--border)}.finance-about-flow-connector i:nth-child(2){background:var(--text-tertiary)}
     .finance-about-note,.finance-about-warning{margin-top:12px;padding:14px 16px;border:1px solid var(--border);border-radius:15px;background:var(--surface-hover)}
     .finance-about-note strong,.finance-about-warning span{display:block;margin-bottom:3px;font-size:10px}
@@ -391,9 +391,9 @@ function installAboutStyles() {
     .finance-about-privacy-row>div:nth-child(2)>strong{display:block;margin-bottom:4px;font-size:13px}.finance-about-privacy-row>span{width:22px;height:22px;display:grid;place-items:center;border-radius:50%;background:color-mix(in srgb,#66906e 15%,transparent);color:#668b6e;font-size:10px;font-weight:800}
     .finance-about-warning{border-color:color-mix(in srgb,#a98254 30%,var(--border));background:color-mix(in srgb,#a98254 6%,var(--surface-raised))}
     .finance-about-tech-card{min-height:120px;padding:17px;border:1px solid var(--border);border-radius:17px;background:var(--surface-raised)}
-    .finance-about-tech-card>span{display:inline-block;margin-bottom:18px;padding:5px 8px;border-radius:7px;background:var(--surface-hover);color:var(--text-secondary);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+    .finance-about-tech-card>span{display:inline-block;margin-bottom:18px;padding:4px 7px;border-radius:7px;background:var(--surface-hover);color:var(--text-tertiary);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em}
     .finance-about-tech-card strong{display:block;margin-bottom:6px;font-size:14px}
-    .finance-about-footer{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px 26px calc(14px + env(safe-area-inset-bottom));border-top:1px solid var(--border);color:var(--text-secondary);font-size:11px}
+    .finance-about-footer{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:13px 26px calc(13px + env(safe-area-inset-bottom));border-top:1px solid var(--border);color:var(--text-tertiary);font-size:10px}
     .finance-about-footer button{border:0;background:transparent;color:var(--text-secondary);font:inherit;font-size:11px;font-weight:680;cursor:pointer}
     .finance-about-open svg,.finance-about-nav svg{stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
     @media(max-width:860px){
@@ -403,8 +403,6 @@ function installAboutStyles() {
       .finance-about-flow{grid-template-columns:1fr;gap:8px}.finance-about-flow-connector{height:16px;transform:rotate(90deg)}
     }
     @media(max-width:560px){
-      .finance-about-status>div{font-size:10px}
-
       .finance-about-dialog{width:100vw;height:100dvh;margin:0;max-height:none}
       .finance-about-shell{height:100dvh;max-height:none;border:0;border-radius:0}
       .finance-about-head{padding:max(17px,env(safe-area-inset-top)) 17px 15px}.finance-about-mark{width:44px;height:44px;border-radius:14px}

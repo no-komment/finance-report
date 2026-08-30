@@ -1,4 +1,5 @@
-const APP_PUBLIC_NAME = 'Runtime';
+const APP_PUBLIC_NAME = 'OwenLogic';
+const APP_INTERNAL_NAME = 'Расходы';
 const DATA_KEY = 'expenses-app:data:v1';
 
 const MONTH_DATIVE = [
@@ -27,7 +28,7 @@ function applyBranding() {
   if (appleTitle) appleTitle.content = APP_PUBLIC_NAME;
 
   const brand = document.querySelector('.brand strong');
-  if (brand) brand.textContent = APP_PUBLIC_NAME;
+  if (brand) brand.textContent = APP_INTERNAL_NAME;
 
   document.addEventListener('visibilitychange', () => {
     if (!document.hidden) document.title = APP_PUBLIC_NAME;
