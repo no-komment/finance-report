@@ -26,6 +26,7 @@ export function parseWorkbook(workbook) {
   for (const sheetName of workbook.SheetNames) {
     const ws = workbook.Sheets[sheetName];
     const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: null, raw: true });
+
     if (normalizeText(sheetName).toLocaleLowerCase('ru') === 'виды трат') {
       for (const row of rows) {
         if (normalizeText(row[0])) categories.push(normalizeText(row[0]));
@@ -33,6 +34,7 @@ export function parseWorkbook(workbook) {
       }
       continue;
     }
+
     if (normalizeText(sheetName).toLocaleLowerCase('ru') === 'источники капитала') {
       const headerRow = rows.findIndex((row) => normalizeText(row[0]) === 'Владелец' && normalizeText(row[1]) === 'Источник');
       const start = headerRow >= 0 ? headerRow + 1 : 0;
@@ -80,6 +82,7 @@ export function parseWorkbook(workbook) {
   }
 
   if (!months.length) throw new Error('В файле не найдены листы месяцев с таблицей расходов.');
+
   return validateData({
     version: 1,
     settings: { currency: 'RUB', locale: 'ru-RU' },
@@ -115,13 +118,18 @@ function findIncome(rows) {
   for (const row of rows) {
     for (let c = 0; c < row.length; c++) {
       const label = normalizeText(row[c]);
+
       if (label === 'Заработок (инв. + зп)') {
         income = numberFromCell(row[c + 1]) || 0;
         for (let i = c + 2; i < Math.min(row.length, c + 7); i++) {
           const candidate = normalizeText(row[i]);
-          if (candidate) { note = candidate; break; }
+          if (candidate) {
+            note = candidate;
+            break;
+          }
         }
       }
+
       if (label === 'Источник дохода') {
         const amount = numberFromCell(row[c + 1]);
         const name = normalizeText(row[c + 2]);
@@ -139,10 +147,12 @@ function findIncome(rows) {
 
 function numberFromCell(value) {
   if (typeof value === 'number' && Number.isFinite(value)) return value;
+
   if (typeof value === 'string') {
     const n = Number(value.replace(/\s/g, '').replace(',', '.'));
     return Number.isFinite(n) ? n : null;
   }
+
   return null;
 }
 
@@ -152,40 +162,88 @@ export function exportXlsx(data) {
 
   for (const month of [...data.months].sort((a, b) => b.id.localeCompare(a.id))) {
     const rows = [REQUIRED_HEADERS];
-    for (const e of month.expenses) rows.push([e.day, escapeCsvLikeFormula(e.category), escapeCsvLikeFormula(e.description), e.amount, escapeCsvLikeFormula(e.type)]);
+
+    // Экспорт всегда упорядочиваем по дню месяца: 1 → 31.
+    // Исходный порядок month.expenses при этом не изменяется.
+    const sortedExpenses = [...month.expenses].sort(
+      (a, b) => Number(a.day) - Number(b.day)
+    );
+
+    for (const e of sortedExpenses) {
+      rows.push([
+        e.day,
+        escapeCsvLikeFormula(e.category),
+        escapeCsvLikeFormula(e.description),
+        e.amount,
+        escapeCsvLikeFormula(e.type),
+      ]);
+    }
+
     rows.push([]);
+
     const t = totals(month);
+
     for (const typeName of data.types) {
       const amount = t.byType.find((x) => x.name === typeName)?.amount || 0;
-      rows.push(['', '', '', typeName === 'Личный' ? 'Личные' : typeName === 'Семейный' ? 'Семейные' : typeName, amount]);
+      rows.push([
+        '',
+        '',
+        '',
+        typeName === 'Личный'
+          ? 'Личные'
+          : typeName === 'Семейный'
+            ? 'Семейные'
+            : typeName,
+        amount,
+      ]);
     }
+
     rows.push(['', '', '', 'Общие', t.total]);
     rows.push(['', '', '', 'Заработок (инв. + зп)', month.income, escapeCsvLikeFormula(month.incomeNote)]);
+
     for (const source of month.incomeSources || []) {
       rows.push(['', '', '', 'Источник дохода', source.amount, escapeCsvLikeFormula(source.name)]);
     }
+
     rows.push(['', '', '', 'Итого', t.balance]);
 
     const ws = XLSX.utils.aoa_to_sheet(rows);
-    ws['!cols'] = [{ wch: 8 }, { wch: 20 }, { wch: 42 }, { wch: 16 }, { wch: 18 }, { wch: 55 }];
+    ws['!cols'] = [
+      { wch: 8 },
+      { wch: 20 },
+      { wch: 42 },
+      { wch: 16 },
+      { wch: 18 },
+      { wch: 55 },
+    ];
+
     const range = XLSX.utils.decode_range(ws['!ref']);
     for (let r = 1; r <= range.e.r; r++) {
       const cell = ws[XLSX.utils.encode_cell({ r, c: 3 })];
       if (cell && typeof cell.v === 'number') cell.z = '#,##0.00';
+
       const amountCell = ws[XLSX.utils.encode_cell({ r, c: 4 })];
       if (amountCell && typeof amountCell.v === 'number') amountCell.z = '#,##0.00';
     }
+
     XLSX.utils.book_append_sheet(wb, ws, month.name.slice(0, 31));
   }
 
   const max = Math.max(data.categories.length, data.types.length);
   const refs = [];
-  for (let i = 0; i < max; i++) refs.push([escapeCsvLikeFormula(data.categories[i] || ''), escapeCsvLikeFormula(data.types[i] || '')]);
+  for (let i = 0; i < max; i++) {
+    refs.push([
+      escapeCsvLikeFormula(data.categories[i] || ''),
+      escapeCsvLikeFormula(data.types[i] || ''),
+    ]);
+  }
+
   const refsWs = XLSX.utils.aoa_to_sheet(refs);
   refsWs['!cols'] = [{ wch: 25 }, { wch: 20 }];
   XLSX.utils.book_append_sheet(wb, refsWs, 'Виды трат');
 
   const capitalRows = [['Владелец', 'Источник', 'Сумма', 'Валюта']];
+
   for (const source of data.capitalSources || []) {
     capitalRows.push([
       escapeCsvLikeFormula(source.owner),
@@ -194,14 +252,21 @@ export function exportXlsx(data) {
       escapeCsvLikeFormula(source.currency || '₽'),
     ]);
   }
+
   const capitalWs = XLSX.utils.aoa_to_sheet(capitalRows);
-  capitalWs['!cols'] = [{ wch: 22 }, { wch: 30 }, { wch: 18 }, { wch: 12 }];
+  capitalWs['!cols'] = [
+    { wch: 22 },
+    { wch: 30 },
+    { wch: 18 },
+    { wch: 12 },
+  ];
+
   for (let r = 1; r < capitalRows.length; r++) {
     const cell = capitalWs[XLSX.utils.encode_cell({ r, c: 2 })];
     if (cell && typeof cell.v === 'number') cell.z = '#,##0.00';
   }
-  XLSX.utils.book_append_sheet(wb, capitalWs, 'Источники капитала');
 
+  XLSX.utils.book_append_sheet(wb, capitalWs, 'Источники капитала');
   XLSX.writeFile(wb, `Отчеты-${new Date().toISOString().slice(0, 10)}.xlsx`);
 }
 
